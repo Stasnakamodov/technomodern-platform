@@ -28,8 +28,12 @@ const CATEGORIES = {
   "Мебель": { name: "Мебель", icon: "🪑", color: "bg-amber-50 text-amber-700 border-amber-200" },
   "Одежда": { name: "Одежда", icon: "👕", color: "bg-purple-50 text-purple-700 border-purple-200" },
   "Строительство": { name: "Строительство", icon: "🏗️", color: "bg-orange-50 text-orange-700 border-orange-200" },
-  "Текстиль": { name: "Текстиль", icon: "🧵", color: "bg-pink-50 text-pink-700 border-pink-200" },
-  "Оборудование": { name: "Оборудование", icon: "⚙️", color: "bg-gray-50 text-gray-700 border-gray-200" }
+  "Красота и здоровье": { name: "Красота и здоровье", icon: "💄", color: "bg-pink-50 text-pink-700 border-pink-200" },
+  "Спорт и отдых": { name: "Спорт и отдых", icon: "⚽", color: "bg-green-50 text-green-700 border-green-200" },
+  "Дом и сад": { name: "Дом и сад", icon: "🏡", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  "Текстиль": { name: "Текстиль", icon: "🧵", color: "bg-violet-50 text-violet-700 border-violet-200" },
+  "Оборудование": { name: "Оборудование", icon: "⚙️", color: "bg-gray-50 text-gray-700 border-gray-200" },
+  "Автотовары": { name: "Автотовары", icon: "🚗", color: "bg-red-50 text-red-700 border-red-200" }
 }
 
 export default function ProductCard({

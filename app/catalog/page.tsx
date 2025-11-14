@@ -67,6 +67,7 @@ export default function CatalogPageV2() {
           description: p.description || '',
           images: p.images || [],
           category: categoriesMap.get(p.category_id) || 'Без категории',
+          category_id: p.category_id, // Сохраняем UUID категории
           inStock: p.in_stock,
           minOrder: p.min_order,
           sku: p.sku,
@@ -149,6 +150,7 @@ export default function CatalogPageV2() {
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    // Фильтруем по названию категории (selectedCategory - это название, не ID)
     const matchesCategory = !selectedCategory || product.category === selectedCategory
     return matchesSearch && matchesCategory
   })

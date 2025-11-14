@@ -8,6 +8,7 @@ export interface Product {
   images: string[]
   specifications?: Record<string, string>
   category: string
+  category_id?: string // UUID категории из БД
   inStock: boolean
   minOrder: number
   sku?: string
