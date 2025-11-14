@@ -7,34 +7,49 @@ import { ChevronDown, X } from "lucide-react"
 
 const faqs = [
   {
+    question: "Кто такой агент и как вы можете представлять интересы иностранного поставщика?",
+    answer:
+      "Наша компания является официальным агентом иностранного поставщика на основании агентского контракта, что закреплено в ст. 1005 ГК РФ. Мы работаем на упрощенной системе налогообложения — УСН (глава 26.2 НК РФ), что позволяет нам оптимально выстроить работу с российскими клиентами, заключать договоры, принимать платежи и проводить расчеты с поставщиком в полном соответствии с законодательством РФ.",
+  },
+  {
+    question: "Нужно ли мне открывать валютные счета для работы с вами?",
+    answer:
+      "Нет, не нужно! Вы оплачиваете товар в рублях на счет нашей российской компании (агента), а мы обеспечиваем законные расчеты с иностранным поставщиком. Все валютные риски и взаимодействие с системой валютного контроля берет на себя агент согласно ФЗ-173 «О валютном регулировании и валютном контроле» и Инструкции ЦБ РФ 181-И. Это существенно упрощает документооборот и снижает банковские риски и издержки.",
+  },
+  {
+    question: "Как обеспечивается законность платежей и безопасность расчетов?",
+    answer:
+      "Все операции проходят валютный контроль с присвоением соответствующего кода валютной операции согласно ФЗ-173 и Инструкции ЦБ РФ 181-И, что гарантирует законность и безопасность каждой сделки. Каждая операция документально подтверждена и соответствует требованиям валютного законодательства РФ.",
+  },
+  {
+    question: "В чем преимущество и законность поставки через страны ЕАЭС?",
+    answer:
+      "Передача товара в странах Таможенного союза полностью соответствует статьям 146 и 147 Налогового кодекса РФ (место реализации товара) и Таможенному кодексу ЕАЭС. Согласно НК РФ, НДС не возникает, так как товар передается за пределами РФ, а именно на территории стран ЕАЭС. При этом мы, работая на УСН (глава 26.2 НК РФ), обеспечиваем прозрачность всех операций.",
+  },
+  {
+    question: "Какие документы гарантируют правовую защиту сделки?",
+    answer:
+      "В соответствии с требованиями Гражданского кодекса РФ (ст. 161) и Федерального закона «О бухгалтерском учете» (статья 9), мы предоставляем полный пакет документов: договор поставки (ст. 454 ГК РФ), спецификацию товара, инвойс от иностранного поставщика, акты приема-передачи товара (ст. 456 ГК РФ) и акт выполненных работ агента. Все документы соответствуют требованиям валютного законодательства (ФЗ-173).",
+  },
+  {
+    question: "Какие налоговые последствия могут возникнуть при такой работе?",
+    answer:
+      "При данной схеме работы НДС не возникает, так как согласно Налоговому кодексу РФ (ст. 146 и 147) местом реализации товара является территория стран ЕАЭС, где товар передается клиенту. Это подтверждается документами и соответствует положениям Таможенного кодекса ЕАЭС. Вы получаете все необходимые документы для бухгалтерии и налоговой отчетности.",
+  },
+  {
     question: "Как долго занимает перевод денег поставщику?",
     answer:
-      "Перевод через USDT занимает 15 минут, через AliPay и WeChat - до 30 минут. Все операции проводятся в рабочее время.",
+      "После получения оплаты от вас в рублях, мы оперативно обеспечиваем исполнение финансовых обязательств перед иностранным поставщиком. Сроки зависят от способа оплаты и валютного контроля, но обычно процесс занимает от нескольких часов до 1-2 рабочих дней. Все операции проводятся в строгом соответствии с требованиями валютного законодательства.",
   },
   {
-    question: "Какие комиссии взимаются за услуги?",
+    question: "Какие комиссии взимаются за ваши услуги?",
     answer:
-      "Комиссия зависит от способа оплаты: USDT - 2%, AliPay - 2.5%, WeChat - 2.5%. Комиссия включает конвертацию валюты и перевод средств.",
+      "Комиссия зависит от объема сделки, способа оплаты и дополнительных услуг. Мы работаем прозрачно — все условия и размер комиссии фиксируются в договоре до начала сотрудничества. Обычно комиссия составляет от 2% до 3% от суммы сделки и включает все финансовые операции, валютный контроль и полный пакет документов.",
   },
   {
-    question: "Нужно ли мне регистрировать компанию в Киргизии?",
+    question: "Несете ли вы ответственность за качество и доставку товара?",
     answer:
-      "Нет, регистрация не требуется. Мы выступаем в качестве платежного агента, и вы работаете со своей российской компанией.",
-  },
-  {
-    question: "Какие документы нужны для начала работы?",
-    answer:
-      "Для малого бизнеса достаточно договора на оплату товара. Для среднего бизнеса потребуется SWIFT подтверждение платежа, агентский договор и акт выполненных работ.",
-  },
-  {
-    question: "Какие способы оплаты вы поддерживаете?",
-    answer:
-      "Мы поддерживаем переводы в USDT, AliPay и WeChat. Все способы позволяют быстро и безопасно переводить средства поставщикам в Китае.",
-  },
-  {
-    question: "Работаете ли вы с крупными компаниями?",
-    answer:
-      "Да, мы работаем как с малым, так и со средним бизнесом. Для крупных компаний предоставляем дополнительные услуги, включая SWIFT платежи и полное документальное сопровождение.",
+      "Важно понимать, что наша компания выполняет функции платежного агента. Согласно условиям договора, мы осуществляем финансовые операции и предоставляем документарное сопровождение, но не осуществляем транспортно-логистических и таможенных услуг. Мы не несем ответственность за качество, доставку и сохранность товара — эти вопросы решаются напрямую между вами и поставщиком.",
   },
 ]
 
@@ -60,46 +75,46 @@ export default function FAQSection() {
   }
 
   return (
-    <section id="faq" className="py-24 px-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">Часто задаваемые вопросы</h2>
-          <p className="text-gray-600 text-lg">Ответы на популярные вопросы о работе с ТехноМодерн</p>
+    <section id="faq" className="py-24 px-4 bg-gradient-to-b from-background to-muted/20 max-md:py-12 max-md:px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-16 max-md:mb-8">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 max-md:text-3xl max-md:mb-3">Юридические и финансовые вопросы</h2>
+          <p className="text-muted-foreground text-lg max-md:text-base max-md:px-2">Подробные ответы с обоснованием по законодательству РФ</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 max-md:space-y-3">
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="border border-gray-200 rounded-2xl overflow-hidden bg-white transition-all hover:shadow-lg"
+              className="border-2 border-border rounded-2xl overflow-hidden bg-card transition-all hover:shadow-lg hover:border-primary/50"
             >
               <button
                 onClick={() => toggleQuestion(index)}
-                className="w-full px-6 py-5 flex items-center justify-between text-left transition-colors hover:bg-gray-50"
+                className="w-full px-6 py-5 flex items-center justify-between text-left transition-colors hover:bg-muted/50 max-md:px-4 max-md:py-4"
               >
-                <span className="font-semibold text-lg pr-4">{faq.question}</span>
+                <span className="font-semibold text-lg pr-4 max-md:text-base max-md:pr-2">{faq.question}</span>
                 <ChevronDown
-                  className={`w-5 h-5 text-violet-600 flex-shrink-0 transition-transform duration-300 ${
+                  className={`w-5 h-5 text-primary flex-shrink-0 transition-transform duration-300 max-md:w-4 max-md:h-4 ${
                     openIndex === index ? "rotate-180" : ""
                   }`}
                 />
               </button>
               <div
                 className={`overflow-hidden transition-all duration-300 ${
-                  openIndex === index ? "max-h-96" : "max-h-0"
+                  openIndex === index ? "max-h-[600px]" : "max-h-0"
                 }`}
               >
-                <div className="px-6 pb-5 pt-2 text-gray-600 leading-relaxed">{faq.answer}</div>
+                <div className="px-6 pb-5 pt-2 text-muted-foreground leading-relaxed text-base max-md:px-4 max-md:text-sm">{faq.answer}</div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">Не нашли ответ на свой вопрос?</p>
+        <div className="mt-12 text-center max-md:mt-8">
+          <p className="text-muted-foreground mb-4 max-md:text-sm max-md:px-2">Не нашли ответ на свой вопрос?</p>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-8 py-3 bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all hover:scale-105"
+            className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl hover:shadow-lg transition-all hover:scale-105 max-md:px-6 max-md:py-2.5 max-md:text-sm"
           >
             Связаться с нами
           </button>
@@ -121,7 +136,7 @@ export default function FAQSection() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-sm font-medium mb-2">
                   Имя
                 </label>
                 <input
@@ -131,13 +146,13 @@ export default function FAQSection() {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background"
                   placeholder="Ваше имя"
                 />
               </div>
 
               <div>
-                <label htmlFor="contact" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="contact" className="block text-sm font-medium mb-2">
                   Email или телефон
                 </label>
                 <input
@@ -147,13 +162,13 @@ export default function FAQSection() {
                   value={formData.contact}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background"
                   placeholder="example@mail.com или +7 (999) 123-45-67"
                 />
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="message" className="block text-sm font-medium mb-2">
                   Сообщение
                 </label>
                 <textarea
@@ -163,14 +178,14 @@ export default function FAQSection() {
                   onChange={handleInputChange}
                   required
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none bg-background"
                   placeholder="Расскажите о вашем вопросе..."
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all hover:scale-105"
+                className="w-full px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl hover:shadow-lg transition-all hover:scale-105"
               >
                 Отправить
               </button>
