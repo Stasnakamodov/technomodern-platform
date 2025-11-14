@@ -46,17 +46,17 @@ function CurrencyRotator() {
 
 export default function PresentationSection() {
   return (
-    <section id="services" className="py-24 px-6 bg-background">
+    <section id="services" className="py-24 px-6 bg-background max-md:py-12 max-md:px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">4 простых шага</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <div className="text-center mb-16 max-md:mb-8">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 max-md:text-3xl max-md:mb-3">4 простых шага</h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto max-md:text-base max-md:px-2">
             От заявки до получения. Весь процесс — онлайн.
           </p>
         </div>
         {/* </CHANGE> */}
 
-        <div className="mb-16">
+        <div className="mb-16 max-md:mb-8">
           <div className="relative">
             {/* Progress line */}
             <div
@@ -64,15 +64,15 @@ export default function PresentationSection() {
               style={{ left: "calc(12.5% + 2rem)", right: "calc(12.5% + 2rem)" }}
             />
 
-            <div className="grid md:grid-cols-4 gap-8 relative">
+            <div className="grid md:grid-cols-4 gap-8 relative max-md:gap-6">
               {steps.map((step, index) => (
                 <div key={index} className="flex flex-col items-center text-center">
                   {/* Step circle */}
-                  <div className="relative z-10 mb-6">
-                    <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-background flex items-center justify-center mb-4">
-                      <div className="text-3xl font-bold text-primary">{String(index + 1).padStart(2, "0")}</div>
+                  <div className="relative z-10 mb-6 max-md:mb-4">
+                    <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-background flex items-center justify-center mb-4 max-md:w-16 max-md:h-16 max-md:mb-3">
+                      <div className="text-3xl font-bold text-primary max-md:text-2xl">{String(index + 1).padStart(2, "0")}</div>
                     </div>
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center max-md:h-10 max-md:w-10">
                       {step.icon}
                     </div>
                   </div>

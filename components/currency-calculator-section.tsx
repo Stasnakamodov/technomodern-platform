@@ -37,10 +37,12 @@ function MiniChart({ data, positive }: { data: number[], positive: boolean }) {
 }
 
 const currencies = [
+  { code: "RUB", name: "Российский рубль", flag: "🇷🇺", rate: 1, change: "0 ₽ (0 %)", positive: true, chartData: [1, 1, 1, 1, 1, 1, 1] },
   { code: "USD", name: "Доллар США", flag: "🇺🇸", rate: 83.0127, change: "+0.3 ₽ (0.36 %)", positive: true, chartData: [82.5, 82.8, 82.3, 82.9, 83.1, 82.7, 83.0] },
   { code: "CNY", name: "Китайский юань", flag: "🇨🇳", rate: 11.8967, change: "+0.17 ₽ (1.43 %)", positive: true, chartData: [11.6, 11.7, 11.8, 11.75, 11.85, 11.9, 11.89] },
   { code: "USDT", name: "Tether", flag: "₮", rate: 84.2288, change: "+0.13 ₽ (0.15 %)", positive: true, chartData: [84.0, 84.1, 84.15, 84.2, 84.18, 84.22, 84.23] },
   { code: "AED", name: "Дирхам ОАЭ", flag: "🇦🇪", rate: 22.4491, change: "+0.31 ₽ (1.38 %)", positive: true, chartData: [22.1, 22.2, 22.3, 22.25, 22.4, 22.42, 22.45] },
+  { code: "TRY", name: "Турецкая лира", flag: "🇹🇷", rate: 2.8934, change: "+0.05 ₽ (1.76 %)", positive: true, chartData: [2.8, 2.82, 2.85, 2.87, 2.89, 2.91, 2.89] },
 ]
 
 export default function CurrencyCalculatorSection() {
@@ -90,15 +92,16 @@ export default function CurrencyCalculatorSection() {
   }
 
   return (
-    <section id="calculator" className="py-24 px-6 bg-background">
+    <section id="calculator" className="py-24 px-6 bg-background max-md:py-12 max-md:px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">Калькулятор валют</h2>
-          <p className="text-lg text-muted-foreground">Актуальные курсы валют для расчёта стоимости закупок</p>
+        <div className="text-center mb-12 max-md:mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 max-md:text-3xl max-md:mb-2">Калькулятор валют</h2>
+          <p className="text-lg text-muted-foreground max-md:text-base">Актуальные курсы валют для расчёта стоимости закупок</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
-          {/* Left side - Exchange rates */}
+        {/* Desktop: Two columns layout */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
+          {/* Left side - Exchange rates (Desktop only) */}
           <Card className="bg-white border-gray-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold">Валютный курс</h3>
@@ -170,7 +173,7 @@ export default function CurrencyCalculatorSection() {
             </div>
           </Card>
 
-          {/* Right side - Converter */}
+          {/* Right side - Converter (Desktop) */}
           <Card className="bg-white border-gray-200 p-6">
             <h3 className="text-xl font-bold mb-6">Конвертер валют</h3>
 
@@ -272,6 +275,97 @@ export default function CurrencyCalculatorSection() {
             </div>
           </Card>
         </div>
+
+        {/* Mobile: Unified component with clickable currency rates */}
+        <Card className="lg:hidden bg-white border-gray-200 p-4 max-w-7xl mx-auto">
+          <h3 className="text-lg font-bold mb-4">Конвертер валют</h3>
+
+          {/* Currency rates as clickable buttons */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-gray-700 mb-2">Нажмите на валюту для выбора:</p>
+            <div className="grid grid-cols-2 gap-2">
+              {currencies.map((currency) => (
+                <button
+                  key={currency.code}
+                  onClick={() => setFromCurrency(currency.code)}
+                  className={`bg-gray-50 rounded-lg p-3 flex items-center justify-between transition-all border-2 ${
+                    fromCurrency === currency.code
+                      ? "border-purple-500 bg-purple-50"
+                      : "border-gray-100 hover:bg-gray-100"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{currency.flag}</span>
+                    <div className="text-left">
+                      <div className="font-bold text-sm text-gray-900">{currency.code}</div>
+                      <div className="text-xs text-gray-600">{currency.rate}</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Swap button */}
+          <div className="flex justify-center mb-3">
+            <button
+              onClick={swapCurrencies}
+              className="bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 rounded-full p-2 active:scale-95 cursor-pointer shadow-lg"
+              title="Поменять местами"
+            >
+              <ArrowDownUp className="w-4 h-4 text-white" />
+            </button>
+          </div>
+
+          {/* Selected conversion pair display */}
+          <div className="bg-gray-50 rounded-lg p-3 mb-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-semibold text-gray-700">Конвертация:</span>
+              <span className="font-bold text-purple-700">{fromCurrency} → {toCurrency}</span>
+            </div>
+          </div>
+
+          {/* Amount input */}
+          <div className="mb-3">
+            <label className="text-xs font-semibold text-gray-700 mb-2 block">Сумма в {fromCurrency}</label>
+            <div className="relative">
+              <Input
+                type="number"
+                placeholder="1000"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="bg-white border-2 border-gray-300 h-12 text-base pr-12 font-semibold"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-base">
+                {fromCurrency === "USD" ? "$" : fromCurrency === "EUR" ? "€" : fromCurrency}
+              </span>
+            </div>
+          </div>
+
+          {/* Result */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border-2 border-purple-200 mb-3">
+            <div className="text-xs font-medium text-purple-700 mb-1">Результат:</div>
+            <div className="text-2xl font-bold text-purple-900">{convertedAmount.toFixed(2)} {toCurrency}</div>
+            <div className="text-xs text-purple-600 mt-1">Курс: 1 {fromCurrency} = {(fromRate / toRate).toFixed(4)} {toCurrency}</div>
+          </div>
+
+          {/* Buttons */}
+          <div className="space-y-2">
+            <Button
+              className="w-full h-10 text-sm font-semibold bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:opacity-90 text-white border-0"
+            >
+              Зафиксировать курс
+            </Button>
+            <Button
+              onClick={openModalWithData}
+              variant="outline"
+              className="w-full h-10 text-sm font-semibold border-2 border-purple-500 text-purple-700"
+            >
+              <Calculator className="w-4 h-4 mr-2" />
+              Рассчитать точную сумму
+            </Button>
+          </div>
+        </Card>
       </div>
 
       {/* Модальное окно с формой */}

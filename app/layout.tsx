@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   description:
     "Помогаем селлерам Ozon, Wildberries и Яндекс Маркета закупать у зарубежных поставщиков. 10,000+ проверенных товаров в каталоге.",
   generator: "v0.app",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+  },
   icons: {
     icon: [
       {

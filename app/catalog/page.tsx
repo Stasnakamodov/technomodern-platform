@@ -218,8 +218,8 @@ export default function CatalogPageV2() {
       </div>
 
       {/* Основной контент с пропорциями золотого сечения */}
-      <div className="max-w-[1920px] mx-auto px-6 py-8">
-        <div className="flex gap-8">
+      <div className="max-w-[1920px] mx-auto px-6 py-8 max-md:px-4 max-md:py-6">
+        <div className="flex gap-8 max-md:gap-4">
           {/* Боковая панель категорий (десктоп) - 38.2% от ширины (обратное золотое сечение) */}
           <div className={`
             ${showCategorySidebar ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto' : 'hidden'}
@@ -248,16 +248,16 @@ export default function CatalogPageV2() {
           {/* Сетка товаров - 61.8% от ширины (золотое сечение) */}
           <div className="flex-1">
             {/* Заголовок с пропорциями Fibonacci */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-8 max-md:mb-6">
               <div>
-                <h2 className="text-[40px] font-bold text-gray-900 leading-tight">
+                <h2 className="text-[40px] font-bold text-gray-900 leading-tight max-md:text-2xl">
                   {selectedCategory || 'Все товары'}
                 </h2>
                 {selectedSubcategory && (
-                  <p className="text-[25px] text-gray-600 mt-2">{selectedSubcategory}</p>
+                  <p className="text-[25px] text-gray-600 mt-2 max-md:text-lg">{selectedSubcategory}</p>
                 )}
               </div>
-              <p className="text-[16px] text-gray-600">
+              <p className="text-[16px] text-gray-600 max-md:hidden">
                 Найдено {filteredProducts.length} товаров
               </p>
             </div>
@@ -279,7 +279,7 @@ export default function CatalogPageV2() {
               </div>
             ) : (
               /* Сетка товаров */
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-md:gap-4">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}

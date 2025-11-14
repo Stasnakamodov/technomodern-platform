@@ -48,7 +48,7 @@ export default function ProductCard({
 
   return (
     <div className="hover:-translate-y-1 transition-transform duration-200">
-      <Card className="shadow-md hover:shadow-xl transition-shadow duration-300 border-gray-200 hover:border-purple-300 bg-white overflow-hidden flex flex-col min-h-[500px]">
+      <Card className="shadow-md hover:shadow-xl transition-shadow duration-300 border-gray-200 hover:border-purple-300 bg-white overflow-hidden flex flex-col min-h-[500px] max-md:min-h-[400px]">
         {/* Изображение товара */}
         <div className="relative w-full h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
           {(product.images && product.images.length > 0) ? (
