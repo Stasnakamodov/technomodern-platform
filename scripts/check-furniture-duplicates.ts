@@ -88,7 +88,7 @@ async function checkDuplicates() {
   });
 
   // Специальная проверка нового изображения
-  const newPhotoId = '1691242459990-d05ef33d42a8';
+  const newPhotoId = 'ZOWxCWfltzU';
   console.log(`\n🔍 Проверка нового изображения gaming кресла (photo-${newPhotoId}):`);
 
   if (imageUsage.has(newPhotoId)) {
