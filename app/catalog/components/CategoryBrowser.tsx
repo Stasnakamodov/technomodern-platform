@@ -59,16 +59,16 @@ export default function CategoryBrowser({
       {/* Кнопка "Все товары" */}
       <Button
         variant={!selectedCategory ? "default" : "ghost"}
-        className={`w-full justify-start h-12 ${
+        className={`w-full justify-start h-12 max-md:h-10 ${
           !selectedCategory
             ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
             : "hover:bg-gray-100"
         }`}
         onClick={() => onCategorySelect('')}
       >
-        <Package className="h-5 w-5 mr-3" />
-        <span className="font-semibold">Все товары</span>
-        <Badge variant="secondary" className="ml-auto">
+        <Package className="h-5 w-5 mr-3 max-md:h-4 max-md:w-4 max-md:mr-2" />
+        <span className="font-semibold max-md:text-sm">Все товары</span>
+        <Badge variant="secondary" className="ml-auto max-md:text-xs">
           {products.length}
         </Badge>
       </Button>
@@ -82,16 +82,16 @@ export default function CategoryBrowser({
             {/* Основная категория */}
             <Button
               variant="ghost"
-              className={`w-full justify-start h-12 ${
+              className={`w-full justify-start h-12 max-md:h-10 ${
                 isSelected ? "bg-purple-50 text-purple-700" : "hover:bg-gray-100"
               }`}
               onClick={() => {
                 onCategorySelect(category.name)
               }}
             >
-              <span className="text-xl mr-3">{category.icon}</span>
-              <span className="font-semibold flex-1 text-left">{category.name}</span>
-              <Badge variant="secondary" className="mr-2">
+              <span className="text-xl mr-3 max-md:text-base max-md:mr-2">{category.icon}</span>
+              <span className="font-semibold flex-1 text-left max-md:text-sm">{category.name}</span>
+              <Badge variant="secondary" className="mr-2 max-md:text-xs max-md:mr-1">
                 {category.count}
               </Badge>
             </Button>

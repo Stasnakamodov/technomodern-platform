@@ -38,7 +38,7 @@ const features = [
 
 export default function AboutSection() {
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/20 max-md:py-12">
+    <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/20 max-md:py-8">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="text-center mb-16 max-md:mb-8">

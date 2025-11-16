@@ -131,9 +131,9 @@ export default async function CatalogSection() {
   }))
 
   return (
-    <section id="catalog" className="py-24 px-6 bg-gradient-to-br from-background to-primary/5">
+    <section id="catalog" className="py-24 px-6 bg-gradient-to-br from-background to-primary/5 max-md:py-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16">
+        <div className="mb-16 max-md:mb-8">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             {totalProducts} товаров от проверенных <span className="text-primary">поставщиков</span>
           </h2>
@@ -143,7 +143,7 @@ export default async function CatalogSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {displayCategories.map((category, index) => (
             <Link key={index} href="/catalog">
               <Card className="group overflow-hidden hover:border-primary/50 transition-all hover:shadow-xl cursor-pointer">

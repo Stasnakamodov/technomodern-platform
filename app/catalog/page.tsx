@@ -165,38 +165,38 @@ export default function CatalogPageV2() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-4 mb-4">
+        <div className="max-w-7xl mx-auto px-6 py-4 max-md:px-3 max-md:py-2">
+          <div className="flex items-center gap-4 mb-4 max-md:mb-2 max-md:gap-2">
             <Link href="/">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                На главную
+              <Button variant="ghost" size="sm" className="gap-2 max-md:gap-1 max-md:px-2">
+                <ArrowLeft className="h-4 w-4 max-md:h-3 max-md:w-3" />
+                <span className="max-md:text-xs">На главную</span>
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Каталог товаров</h1>
+            <h1 className="text-2xl font-bold text-gray-900 max-md:text-lg">Каталог товаров</h1>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 max-md:gap-2">
             {/* Кнопка категорий (мобильная) */}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowCategorySidebar(!showCategorySidebar)}
-              className="lg:hidden"
+              className="lg:hidden max-md:px-2 max-md:text-xs"
             >
-              <Filter className="h-4 w-4 mr-2" />
-              Категории
+              <Filter className="h-4 w-4 mr-2 max-md:mr-1 max-md:h-3 max-md:w-3" />
+              <span className="max-md:hidden">Категории</span>
             </Button>
 
             {/* Поиск */}
             <div className="flex-1 max-w-2xl">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 max-md:left-2 max-md:h-4 max-md:w-4" />
                 <Input
                   placeholder="Поиск товаров..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-12 bg-gray-50 border-gray-200"
+                  className="pl-10 h-12 bg-gray-50 border-gray-200 max-md:pl-8 max-md:h-9 max-md:text-sm"
                 />
               </div>
             </div>
@@ -205,12 +205,12 @@ export default function CatalogPageV2() {
             <Button
               onClick={() => setCartOpen(!cartOpen)}
               variant="outline"
-              className="relative h-12 px-4"
+              className="relative h-12 px-4 max-md:h-9 max-md:px-2"
             >
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              <span className="hidden sm:inline">Корзина</span>
+              <ShoppingCart className="h-5 w-5 mr-2 max-md:h-4 max-md:w-4 max-md:mr-0" />
+              <span className="hidden sm:inline max-md:hidden">Корзина</span>
               {cart.length > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-purple-500 text-white">
+                <Badge className="absolute -top-2 -right-2 bg-purple-500 text-white max-md:text-xs max-md:-top-1 max-md:-right-1">
                   {cart.length}
                 </Badge>
               )}
@@ -220,22 +220,23 @@ export default function CatalogPageV2() {
       </div>
 
       {/* Основной контент с пропорциями золотого сечения */}
-      <div className="max-w-[1920px] mx-auto px-6 py-8 max-md:px-4 max-md:py-6">
-        <div className="flex gap-8 max-md:gap-4">
+      <div className="max-w-[1920px] mx-auto px-6 py-8 max-md:px-3 max-md:py-4">
+        <div className="flex gap-8 max-md:gap-0">
           {/* Боковая панель категорий (десктоп) - 38.2% от ширины (обратное золотое сечение) */}
           <div className={`
-            ${showCategorySidebar ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto' : 'hidden'}
+            ${showCategorySidebar ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto max-md:p-4' : 'hidden'}
             lg:block lg:static lg:w-[382px] lg:flex-shrink-0
           `}>
             {showCategorySidebar && (
-              <div className="flex items-center justify-between mb-4 lg:hidden">
-                <h2 className="text-xl font-bold">Категории</h2>
+              <div className="flex items-center justify-between mb-4 lg:hidden max-md:mb-3">
+                <h2 className="text-xl font-bold max-md:text-lg">Категории</h2>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowCategorySidebar(false)}
+                  className="max-md:h-8 max-md:w-8 max-md:p-0"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-5 w-5 max-md:h-4 max-md:w-4" />
                 </Button>
               </div>
             )}
@@ -250,13 +251,13 @@ export default function CatalogPageV2() {
           {/* Сетка товаров - 61.8% от ширины (золотое сечение) */}
           <div className="flex-1">
             {/* Заголовок с пропорциями Fibonacci */}
-            <div className="flex items-center justify-between mb-8 max-md:mb-6">
+            <div className="flex items-center justify-between mb-8 max-md:mb-4">
               <div>
-                <h2 className="text-[40px] font-bold text-gray-900 leading-tight max-md:text-2xl">
+                <h2 className="text-[40px] font-bold text-gray-900 leading-tight max-md:text-xl max-md:leading-snug">
                   {selectedCategory || 'Все товары'}
                 </h2>
                 {selectedSubcategory && (
-                  <p className="text-[25px] text-gray-600 mt-2 max-md:text-lg">{selectedSubcategory}</p>
+                  <p className="text-[25px] text-gray-600 mt-2 max-md:text-base max-md:mt-1">{selectedSubcategory}</p>
                 )}
               </div>
               <p className="text-[16px] text-gray-600 max-md:hidden">
@@ -281,7 +282,7 @@ export default function CatalogPageV2() {
               </div>
             ) : (
               /* Сетка товаров */
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-md:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
