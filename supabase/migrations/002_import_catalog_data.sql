@@ -1,6 +1,6 @@
 -- ТехноМодерн Каталог - Импорт данных
--- Сгенерировано: 2025-11-12T12:13:05.606Z
--- Товаров: 459
+-- Сгенерировано: 2025-11-15T17:05:49.115Z
+-- Товаров: 455
 
 -- Очистка старых данных (опционально, раскомментируйте если нужно)
 -- TRUNCATE TABLE products CASCADE;
@@ -1698,7 +1698,7 @@ VALUES (
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
 
--- Прогресс: 50/459 товаров
+-- Прогресс: 50/455 товаров
 
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
@@ -2700,7 +2700,7 @@ VALUES (
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
 
--- Прогресс: 100/459 товаров
+-- Прогресс: 100/455 товаров
 
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
@@ -3702,7 +3702,7 @@ VALUES (
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
 
--- Прогресс: 150/459 товаров
+-- Прогресс: 150/455 товаров
 
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
@@ -4209,26 +4209,6 @@ INSERT INTO products (
   price, currency, min_order, in_stock, images, specifications, created_at
 )
 VALUES (
-  'prod-0176',
-  '00000006-0000-0000-0000-000000060000',
-  '00000066-0000-0000-0000-000000660000',
-  'Офисное кресло Gaming Эргономичное',
-  'Топовый офисное кресло gaming эргономичное по доступной цене. С подлокотниками. Прямые поставки с завода.',
-  'prod-0176',
-  52871,
-  'RUB',
-  5,
-  true,
-  ARRAY['https://images.unsplash.com/photo-1500000000176?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  '{"spec_1":"Эргономичное","spec_2":"С подлокотниками","spec_3":"Массаж"}'::jsonb,
-  NOW()
-) ON CONFLICT (sku) DO NOTHING;
-
-INSERT INTO products (
-  id, supplier_id, category_id, name, description, sku,
-  price, currency, min_order, in_stock, images, specifications, created_at
-)
-VALUES (
   'prod-0177',
   '00000003-0000-0000-0000-000000030000',
   '00000066-0000-0000-0000-000000660000',
@@ -4349,26 +4329,6 @@ INSERT INTO products (
   price, currency, min_order, in_stock, images, specifications, created_at
 )
 VALUES (
-  'prod-0183',
-  '00000002-0000-0000-0000-000000020000',
-  '00000066-0000-0000-0000-000000660000',
-  'Офисное кресло Gaming Массаж',
-  'Топовый офисное кресло gaming массаж по доступной цене. Регулируемое. Прямые поставки с завода.',
-  'prod-0183',
-  38626,
-  'RUB',
-  16,
-  true,
-  ARRAY['https://images.unsplash.com/photo-1500000000183?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  '{"spec_1":"Эргономичное","spec_2":"С подлокотниками","spec_3":"Массаж"}'::jsonb,
-  NOW()
-) ON CONFLICT (sku) DO NOTHING;
-
-INSERT INTO products (
-  id, supplier_id, category_id, name, description, sku,
-  price, currency, min_order, in_stock, images, specifications, created_at
-)
-VALUES (
   'prod-0184',
   '00000002-0000-0000-0000-000000020000',
   '00000066-0000-0000-0000-000000660000',
@@ -4380,26 +4340,6 @@ VALUES (
   10,
   true,
   ARRAY['https://images.unsplash.com/photo-1500000000184?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  '{"spec_1":"Эргономичное","spec_2":"С подлокотниками","spec_3":"Массаж"}'::jsonb,
-  NOW()
-) ON CONFLICT (sku) DO NOTHING;
-
-INSERT INTO products (
-  id, supplier_id, category_id, name, description, sku,
-  price, currency, min_order, in_stock, images, specifications, created_at
-)
-VALUES (
-  'prod-0185',
-  '00000005-0000-0000-0000-000000050000',
-  '00000066-0000-0000-0000-000000660000',
-  'Офисное кресло Gaming Эргономичное',
-  'Качественный офисное кресло gaming эргономичное от проверенного китайского производителя. Эргономичное. Отличное соотношение цены и качества.',
-  'prod-0185',
-  18138,
-  'RUB',
-  16,
-  true,
-  ARRAY['https://images.unsplash.com/photo-1500000000185?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
   '{"spec_1":"Эргономичное","spec_2":"С подлокотниками","spec_3":"Массаж"}'::jsonb,
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
@@ -4460,26 +4400,6 @@ VALUES (
   19,
   true,
   ARRAY['https://images.unsplash.com/photo-1500000000188?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-  '{"spec_1":"Эргономичное","spec_2":"С подлокотниками","spec_3":"Массаж"}'::jsonb,
-  NOW()
-) ON CONFLICT (sku) DO NOTHING;
-
-INSERT INTO products (
-  id, supplier_id, category_id, name, description, sku,
-  price, currency, min_order, in_stock, images, specifications, created_at
-)
-VALUES (
-  'prod-0189',
-  '00000002-0000-0000-0000-000000020000',
-  '00000066-0000-0000-0000-000000660000',
-  'Офисное кресло Gaming Массаж',
-  'Качественный офисное кресло gaming массаж от проверенного китайского производителя. С подлокотниками. Отличное соотношение цены и качества.',
-  'prod-0189',
-  48757,
-  'RUB',
-  15,
-  true,
-  ARRAY['https://images.unsplash.com/photo-1500000000189?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
   '{"spec_1":"Эргономичное","spec_2":"С подлокотниками","spec_3":"Массаж"}'::jsonb,
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
@@ -4704,8 +4624,6 @@ VALUES (
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
 
--- Прогресс: 200/459 товаров
-
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
   price, currency, min_order, in_stock, images, specifications, created_at
@@ -4785,6 +4703,8 @@ VALUES (
   '{"spec_1":"Раскладной","spec_2":"Угловой","spec_3":"Прямой"}'::jsonb,
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
+
+-- Прогресс: 200/455 товаров
 
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
@@ -5706,8 +5626,6 @@ VALUES (
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
 
--- Прогресс: 250/459 товаров
-
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
   price, currency, min_order, in_stock, images, specifications, created_at
@@ -5787,6 +5705,8 @@ VALUES (
   '{"spec_1":"Потолочный","spec_2":"Настенный","spec_3":"Умный"}'::jsonb,
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
+
+-- Прогресс: 250/455 товаров
 
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
@@ -6708,8 +6628,6 @@ VALUES (
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
 
--- Прогресс: 300/459 товаров
-
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
   price, currency, min_order, in_stock, images, specifications, created_at
@@ -6789,6 +6707,8 @@ VALUES (
   '{"spec_1":"Передние","spec_2":"Задние","spec_3":"Керамические"}'::jsonb,
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
+
+-- Прогресс: 300/455 товаров
 
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
@@ -7710,8 +7630,6 @@ VALUES (
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
 
--- Прогресс: 350/459 товаров
-
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
   price, currency, min_order, in_stock, images, specifications, created_at
@@ -7791,6 +7709,8 @@ VALUES (
   '{"spec_1":"Нержавеющая сталь","spec_2":"Керамика","spec_3":"Стекло"}'::jsonb,
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
+
+-- Прогресс: 350/455 товаров
 
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
@@ -8712,8 +8632,6 @@ VALUES (
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
 
--- Прогресс: 400/459 товаров
-
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
   price, currency, min_order, in_stock, images, specifications, created_at
@@ -8793,6 +8711,8 @@ VALUES (
   '{"spec_1":"Разборные","spec_2":"Неопрен","spec_3":"Хром"}'::jsonb,
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
+
+-- Прогресс: 400/455 товаров
 
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
@@ -9714,8 +9634,6 @@ VALUES (
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
 
--- Прогресс: 450/459 товаров
-
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,
   price, currency, min_order, in_stock, images, specifications, created_at
@@ -9795,6 +9713,8 @@ VALUES (
   '{"spec_1":"Увлажняющий","spec_2":"Антивозрастной","spec_3":"Для сухой кожи"}'::jsonb,
   NOW()
 ) ON CONFLICT (sku) DO NOTHING;
+
+-- Прогресс: 450/455 товаров
 
 INSERT INTO products (
   id, supplier_id, category_id, name, description, sku,

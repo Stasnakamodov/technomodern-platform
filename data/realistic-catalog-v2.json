@@ -1,6 +1,6 @@
 {
   "generated_at": "2025-11-12T12:11:42.882Z",
-  "total_products": 459,
+  "total_products": 455,
   "categories": [
     {
       "id": "electronics",
@@ -4189,29 +4189,6 @@
       "created_at": "2025-11-12T12:11:42.881Z"
     },
     {
-      "id": "prod-0176",
-      "name": "Офисное кресло Gaming Эргономичное",
-      "category": "Мебель",
-      "subcategory": "Спальня",
-      "description": "Топовый офисное кресло gaming эргономичное по доступной цене. С подлокотниками. Прямые поставки с завода.",
-      "price_1688_cny": 2450,
-      "price_rub": 52871,
-      "margin_percent": 66,
-      "supplier": "Ningbo Manufacturing",
-      "supplier_city": "Нинбо",
-      "supplier_verified": true,
-      "supplier_rating": 4.6,
-      "moq": 5,
-      "in_stock": true,
-      "image_url": "https://images.unsplash.com/photo-1500000000176?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      "specifications": {
-        "spec_1": "Эргономичное",
-        "spec_2": "С подлокотниками",
-        "spec_3": "Массаж"
-      },
-      "created_at": "2025-11-12T12:11:42.881Z"
-    },
-    {
       "id": "prod-0177",
       "name": "Офисное кресло Classic Массаж",
       "category": "Мебель",
@@ -4350,29 +4327,6 @@
       "created_at": "2025-11-12T12:11:42.881Z"
     },
     {
-      "id": "prod-0183",
-      "name": "Офисное кресло Gaming Массаж",
-      "category": "Мебель",
-      "subcategory": "Шкафы",
-      "description": "Топовый офисное кресло gaming массаж по доступной цене. Регулируемое. Прямые поставки с завода.",
-      "price_1688_cny": 1857,
-      "price_rub": 38626,
-      "margin_percent": 60,
-      "supplier": "Yiwu Trading Group",
-      "supplier_city": "Иу",
-      "supplier_verified": true,
-      "supplier_rating": 4.6,
-      "moq": 16,
-      "in_stock": true,
-      "image_url": "https://images.unsplash.com/photo-1500000000183?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      "specifications": {
-        "spec_1": "Эргономичное",
-        "spec_2": "С подлокотниками",
-        "spec_3": "Массаж"
-      },
-      "created_at": "2025-11-12T12:11:42.881Z"
-    },
-    {
       "id": "prod-0184",
       "name": "Офисное кресло Executive С подлокотниками",
       "category": "Мебель",
@@ -4388,29 +4342,6 @@
       "moq": 10,
       "in_stock": true,
       "image_url": "https://images.unsplash.com/photo-1500000000184?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      "specifications": {
-        "spec_1": "Эргономичное",
-        "spec_2": "С подлокотниками",
-        "spec_3": "Массаж"
-      },
-      "created_at": "2025-11-12T12:11:42.881Z"
-    },
-    {
-      "id": "prod-0185",
-      "name": "Офисное кресло Gaming Эргономичное",
-      "category": "Мебель",
-      "subcategory": "Шкафы",
-      "description": "Качественный офисное кресло gaming эргономичное от проверенного китайского производителя. Эргономичное. Отличное соотношение цены и качества.",
-      "price_1688_cny": 906,
-      "price_rub": 18138,
-      "margin_percent": 54,
-      "supplier": "Shanghai Home Goods",
-      "supplier_city": "Шанхай",
-      "supplier_verified": true,
-      "supplier_rating": 4.7,
-      "moq": 16,
-      "in_stock": true,
-      "image_url": "https://images.unsplash.com/photo-1500000000185?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "specifications": {
         "spec_1": "Эргономичное",
         "spec_2": "С подлокотниками",
@@ -4480,29 +4411,6 @@
       "moq": 19,
       "in_stock": true,
       "image_url": "https://images.unsplash.com/photo-1500000000188?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      "specifications": {
-        "spec_1": "Эргономичное",
-        "spec_2": "С подлокотниками",
-        "spec_3": "Массаж"
-      },
-      "created_at": "2025-11-12T12:11:42.881Z"
-    },
-    {
-      "id": "prod-0189",
-      "name": "Офисное кресло Gaming Массаж",
-      "category": "Мебель",
-      "subcategory": "Шкафы",
-      "description": "Качественный офисное кресло gaming массаж от проверенного китайского производителя. С подлокотниками. Отличное соотношение цены и качества.",
-      "price_1688_cny": 2131,
-      "price_rub": 48757,
-      "margin_percent": 76,
-      "supplier": "Yiwu Trading Group",
-      "supplier_city": "Иу",
-      "supplier_verified": true,
-      "supplier_rating": 4.6,
-      "moq": 15,
-      "in_stock": true,
-      "image_url": "https://images.unsplash.com/photo-1500000000189?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "specifications": {
         "spec_1": "Эргономичное",
         "spec_2": "С подлокотниками",
