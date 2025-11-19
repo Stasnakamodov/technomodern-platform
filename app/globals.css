@@ -122,3 +122,152 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Кастомный скроллбар для выпадающего меню категорий */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Для Firefox */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+/* Каскадная анимация для категорий */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Применяем каскадную анимацию к категориям */
+.category-item {
+  animation: slideInLeft 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.category-item:nth-child(1) { animation-delay: 0ms; }
+.category-item:nth-child(2) { animation-delay: 80ms; }
+.category-item:nth-child(3) { animation-delay: 160ms; }
+.category-item:nth-child(4) { animation-delay: 240ms; }
+.category-item:nth-child(5) { animation-delay: 320ms; }
+.category-item:nth-child(6) { animation-delay: 400ms; }
+.category-item:nth-child(7) { animation-delay: 480ms; }
+.category-item:nth-child(8) { animation-delay: 560ms; }
+
+/* Анимация для header (появляется после категорий) */
+.header-animate {
+  animation: slideInTop 0.5s ease-out forwards;
+  animation-delay: 700ms;
+  opacity: 0;
+}
+
+/* Анимация растяжения контейнера header'а */
+@keyframes expandWidth {
+  from {
+    width: 50%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.header-container {
+  animation: expandWidth 0.8s ease-out forwards;
+  animation-delay: 1500ms;
+  width: 50%;
+}
+
+/* Анимация растягивания контейнера панели поиска */
+@keyframes expandSearchContainer {
+  from {
+    width: 672px;
+  }
+  to {
+    width: 896px;
+  }
+}
+
+.search-container-animate {
+  animation: expandSearchContainer 1s ease-in-out forwards;
+  animation-delay: 2000ms;
+  width: 672px;
+}
+
+/* Анимация растягивания панели поиска */
+@keyframes expandSearchPanel {
+  from {
+    width: 672px;
+  }
+  to {
+    width: 896px;
+  }
+}
+
+.search-panel-animate {
+  animation: expandSearchPanel 1s ease-in-out forwards;
+  animation-delay: 2000ms;
+  width: 672px;
+}
+
+/* Каскадная анимация для товаров */
+.product-card {
+  animation: fadeInUp 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.product-card:nth-child(1) { animation-delay: 900ms; }
+.product-card:nth-child(2) { animation-delay: 950ms; }
+.product-card:nth-child(3) { animation-delay: 1000ms; }
+.product-card:nth-child(4) { animation-delay: 1050ms; }
+.product-card:nth-child(5) { animation-delay: 1100ms; }
+.product-card:nth-child(6) { animation-delay: 1150ms; }
+.product-card:nth-child(7) { animation-delay: 1200ms; }
+.product-card:nth-child(8) { animation-delay: 1250ms; }
+.product-card:nth-child(9) { animation-delay: 1300ms; }
+.product-card:nth-child(10) { animation-delay: 1350ms; }
+.product-card:nth-child(11) { animation-delay: 1400ms; }
+.product-card:nth-child(12) { animation-delay: 1450ms; }
+.product-card:nth-child(n+13) { animation-delay: 1500ms; }

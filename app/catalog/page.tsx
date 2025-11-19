@@ -1,18 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Search, ShoppingCart, X, Plus, Minus, Package, ArrowLeft, Filter } from 'lucide-react'
+import { ShoppingCart, X, Plus, Minus, Package, ArrowLeft, Filter } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import ProductCard from './components/ProductCard'
 import CategoryBrowser from './components/CategoryBrowser'
+import CatalogHeader from '@/components/catalog/CatalogHeader'
 import type { Product, CartItem } from '@/types/catalog.types'
 import { supabase } from '@/lib/supabase'
 
 export default function CatalogPageV2() {
+  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [cart, setCart] = useState<CartItem[]>([])
@@ -21,6 +23,21 @@ export default function CatalogPageV2() {
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('')
   const [showCategorySidebar, setShowCategorySidebar] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+
+  // Загрузка поискового запроса и категории из URL при монтировании
+  useEffect(() => {
+    const urlSearch = searchParams.get('search')
+    const urlCategory = searchParams.get('category')
+
+    if (urlSearch) {
+      setSearchQuery(urlSearch)
+    }
+
+    if (urlCategory) {
+      setSelectedCategory(urlCategory)
+    }
+  }, [searchParams])
 
   // Загрузка товаров из Supabase
   useEffect(() => {
@@ -98,6 +115,17 @@ export default function CatalogPageV2() {
     localStorage.setItem('technomodern_cart', JSON.stringify(cart))
   }, [cart])
 
+  // Индикатор поиска с debounce
+  useEffect(() => {
+    if (searchQuery) {
+      setIsSearching(true)
+      const timer = setTimeout(() => setIsSearching(false), 300)
+      return () => clearTimeout(timer)
+    } else {
+      setIsSearching(false)
+    }
+  }, [searchQuery])
+
   // Добавление товара в корзину
   const addToCart = (product: Product) => {
     const existingItem = cart.find(item => item.id === product.id)
@@ -146,12 +174,20 @@ export default function CatalogPageV2() {
     return cart.reduce((sum, item) => sum + item.total_price, 0)
   }
 
-  // Фильтрация товаров
+  // Фильтрация товаров с расширенным поиском
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    const query = searchQuery.toLowerCase().trim()
+
+    // Расширенный поиск по 4 полям
+    const matchesSearch = !query ||
+      product.name.toLowerCase().includes(query) ||
+      product.description.toLowerCase().includes(query) ||
+      (product.supplier_name?.toLowerCase().includes(query)) ||
+      (product.sku?.toLowerCase().includes(query))
+
     // Фильтруем по названию категории (selectedCategory - это название, не ID)
     const matchesCategory = !selectedCategory || product.category === selectedCategory
+
     return matchesSearch && matchesCategory
   })
 
@@ -163,9 +199,9 @@ export default function CatalogPageV2() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4 max-md:px-3 max-md:py-2">
+      {/* Header - появляется после категорий */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-40 header-animate">
+        <div className="header-container px-6 py-4 max-md:px-3 max-md:py-2">
           <div className="flex items-center gap-4 mb-4 max-md:mb-2 max-md:gap-2">
             <Link href="/">
               <Button variant="ghost" size="sm" className="gap-2 max-md:gap-1 max-md:px-2">
@@ -188,17 +224,16 @@ export default function CatalogPageV2() {
               <span className="max-md:hidden">Категории</span>
             </Button>
 
-            {/* Поиск */}
-            <div className="flex-1 max-w-2xl">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 max-md:left-2 max-md:h-4 max-md:w-4" />
-                <Input
-                  placeholder="Поиск товаров..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-12 bg-gray-50 border-gray-200 max-md:pl-8 max-md:h-9 max-md:text-sm"
-                />
-              </div>
+            {/* Новый компонент поиска с расширенным функционалом */}
+            <div className="search-container-animate max-md:flex-1">
+              <CatalogHeader
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                totalProducts={products.length}
+                filteredProducts={filteredProducts.length}
+                isSearching={isSearching}
+                onClearSearch={() => setSearchQuery('')}
+              />
             </div>
 
             {/* Корзина */}
@@ -210,7 +245,7 @@ export default function CatalogPageV2() {
               <ShoppingCart className="h-5 w-5 mr-2 max-md:h-4 max-md:w-4 max-md:mr-0" />
               <span className="hidden sm:inline max-md:hidden">Корзина</span>
               {cart.length > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-purple-500 text-white max-md:text-xs max-md:-top-1 max-md:-right-1">
+                <Badge className="absolute -top-2 -right-2 bg-gray-900 text-white max-md:text-xs max-md:-top-1 max-md:-right-1">
                   {cart.length}
                 </Badge>
               )}
@@ -222,10 +257,10 @@ export default function CatalogPageV2() {
       {/* Основной контент с пропорциями золотого сечения */}
       <div className="max-w-[1920px] mx-auto px-6 py-8 max-md:px-3 max-md:py-4">
         <div className="flex gap-8 max-md:gap-0">
-          {/* Боковая панель категорий (десктоп) - 38.2% от ширины (обратное золотое сечение) */}
+          {/* Боковая панель категорий (десктоп) - появляется первой */}
           <div className={`
-            ${showCategorySidebar ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto max-md:p-4' : 'hidden'}
-            lg:block lg:static lg:w-[382px] lg:flex-shrink-0
+            ${showCategorySidebar ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto max-md:p-4' : 'hidden lg:block'}
+            lg:static lg:w-[382px] lg:flex-shrink-0
           `}>
             {showCategorySidebar && (
               <div className="flex items-center justify-between mb-4 lg:hidden max-md:mb-3">
@@ -248,7 +283,7 @@ export default function CatalogPageV2() {
             />
           </div>
 
-          {/* Сетка товаров - 61.8% от ширины (золотое сечение) */}
+          {/* Сетка товаров - появляется последней */}
           <div className="flex-1">
             {/* Заголовок с пропорциями Fibonacci */}
             <div className="flex items-center justify-between mb-8 max-md:mb-4">
@@ -268,7 +303,7 @@ export default function CatalogPageV2() {
             {/* Индикатор загрузки */}
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mb-4"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900 mb-4"></div>
                 <p className="text-gray-600">Загружаем товары из Supabase...</p>
                 <p className="text-sm text-gray-400 mt-2">Загружено: {products.length}</p>
               </div>
@@ -284,11 +319,12 @@ export default function CatalogPageV2() {
               /* Сетка товаров */
               <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                 {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAddToCart={addToCart}
-                  />
+                  <div key={product.id} className="product-card">
+                    <ProductCard
+                      product={product}
+                      onAddToCart={addToCart}
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -375,7 +411,7 @@ export default function CatalogPageV2() {
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
-                        <div className="mt-2 text-sm font-bold text-purple-600">
+                        <div className="mt-2 text-sm font-bold text-gray-900">
                           ${item.total_price.toFixed(2)}
                         </div>
                       </div>
@@ -390,10 +426,10 @@ export default function CatalogPageV2() {
               <div className="p-6 border-t border-gray-200 space-y-4">
                 <div className="flex items-center justify-between text-lg font-bold">
                   <span>Итого:</span>
-                  <span className="text-2xl text-purple-600">${getTotalPrice().toFixed(2)}</span>
+                  <span className="text-2xl text-gray-900">${getTotalPrice().toFixed(2)}</span>
                 </div>
                 <Button
-                  className="w-full h-12 text-base bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                  className="w-full h-12 text-base bg-gray-900 hover:bg-gray-800 text-white"
                   onClick={() => alert('Функция создания заказа будет доступна скоро!')}
                 >
                   <Package className="h-5 w-5 mr-2" />
