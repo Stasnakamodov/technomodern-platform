@@ -201,7 +201,7 @@ export default function CatalogSection() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-16 max-md:mb-8">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            {totalProducts} товаров от проверенных <span className="text-primary">поставщиков</span>
+            Товары от проверенных <span className="text-primary">поставщиков</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl">
             Выбирайте товары из нашего каталога или добавляйте своих поставщиков. Все цены актуальны, все поставщики
@@ -238,11 +238,10 @@ export default function CatalogSection() {
                     )}
                   </div>
                   <div className="p-6">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-4">
                       <h3 className="text-2xl font-bold">{category.name}</h3>
                       <ArrowRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
                     </div>
-                    <p className="text-muted-foreground mb-4">{category.count}</p>
                     <div className="flex flex-wrap gap-2">
                       {category.tags.map((tag, tagIndex) => (
                         <span

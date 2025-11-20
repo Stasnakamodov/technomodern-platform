@@ -51,8 +51,11 @@ export default function ProductCard({
   const category = CATEGORIES[product.category as keyof typeof CATEGORIES] || CATEGORIES["Электроника"]
 
   return (
-    <div className="hover:-translate-y-1 transition-transform duration-200">
-      <Card className="shadow-md hover:shadow-xl transition-shadow duration-300 border-gray-200 hover:border-purple-300 bg-white overflow-hidden flex flex-col min-h-[360px] sm:min-h-[400px] md:min-h-[440px] lg:min-h-[480px]">
+    <div
+      className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer"
+      onClick={() => onViewDetails?.(product)}
+    >
+      <Card className="shadow-md hover:shadow-xl transition-shadow duration-300 border-gray-200 hover:border-gray-300 bg-white overflow-hidden flex flex-col min-h-[360px] sm:min-h-[400px] md:min-h-[440px] lg:min-h-[480px]">
         {/* Изображение товара */}
         <div className="relative w-full h-44 sm:h-52 md:h-56 lg:h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
           {(product.images && product.images.length > 0) ? (
@@ -71,28 +74,12 @@ export default function ProductCard({
             <ImageIcon className="h-16 w-16 text-gray-300" />
           </div>
 
-          {/* Категория */}
-          <div className="absolute top-3 left-3">
-            <Badge variant="outline" className={`${category.color} backdrop-blur-sm bg-white/90`}>
-              <span className="mr-1">{category.icon}</span>
-              {category.name}
-            </Badge>
-          </div>
-
-          {/* Наличие товара */}
-          {product.inStock && (
-            <div className="absolute top-3 right-3">
-              <Badge variant="outline" className="bg-green-50/90 text-green-700 border-green-200 backdrop-blur-sm">
-                В наличии
-              </Badge>
-            </div>
-          )}
         </div>
 
         <CardHeader className="pb-3">
           <div className="space-y-2">
             {/* Заголовок */}
-            <h3 className="font-semibold text-base sm:text-lg text-gray-900 line-clamp-2 hover:text-purple-600 transition-colors">
+            <h3 className="font-semibold text-base sm:text-lg text-gray-900 line-clamp-2 hover:text-gray-700 transition-colors">
               {product.name}
             </h3>
 
@@ -111,7 +98,7 @@ export default function ProductCard({
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
               <span className="text-sm text-gray-600">Цена</span>
-              <div className="font-bold text-xl sm:text-2xl text-purple-600">
+              <div className="font-bold text-xl sm:text-2xl text-gray-900">
                 {product.price.toLocaleString('ru-RU')} ₽
               </div>
             </div>
@@ -136,8 +123,11 @@ export default function ProductCard({
             {/* Главная кнопка */}
             <Button
               size="lg"
-              onClick={() => onAddToCart?.(product)}
-              className="w-full h-10 sm:h-11 md:h-12 text-xs sm:text-sm font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-sm hover:shadow-md transition-all"
+              onClick={(e) => {
+                e.stopPropagation()
+                onAddToCart?.(product)
+              }}
+              className="w-full h-10 sm:h-11 md:h-12 text-xs sm:text-sm font-semibold bg-gray-900 hover:bg-gray-800 text-white shadow-sm hover:shadow-md transition-all"
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
               В корзину
@@ -148,8 +138,11 @@ export default function ProductCard({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onViewDetails?.(product)}
-                className="h-8 sm:h-9 text-[10px] sm:text-xs hover:bg-purple-50 hover:border-purple-300"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onViewDetails?.(product)
+                }}
+                className="h-8 sm:h-9 text-[10px] sm:text-xs hover:bg-gray-100"
               >
                 <Eye className="h-3 w-3 mr-1" />
                 Подробнее
@@ -157,8 +150,11 @@ export default function ProductCard({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onContactSupplier?.(product.id)}
-                className="h-8 sm:h-9 text-[10px] sm:text-xs hover:bg-purple-50 hover:border-purple-300"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onContactSupplier?.(product.id)
+                }}
+                className="h-8 sm:h-9 text-[10px] sm:text-xs hover:bg-gray-100"
               >
                 <MessageCircle className="h-3 w-3 mr-1" />
                 Связаться

@@ -96,18 +96,25 @@ export default function HeroSection() {
                 height: '56px'
               }}
             >
-              <HeaderSearch />
+              <HeaderSearch isSticky={false} />
             </div>
-            <Link href="/catalog" className="max-md:w-full">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-transparent max-md:w-full max-md:text-base">
-                Создать заказ
-              </Button>
-            </Link>
+            <div className="flex flex-row gap-4 max-md:flex-col max-md:w-full">
+              <Link href="/catalog" className="max-md:w-full">
+                <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 max-md:w-full max-md:text-base">
+                  Найти товар
+                </Button>
+              </Link>
+              <Link href="/catalog" className="max-md:w-full">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-transparent max-md:w-full max-md:text-base">
+                  Создать заказ
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Fixed поисковая строка - появляется при скролле */}
           <div
-            className="fixed top-0 left-0 right-0 z-40 px-6 py-3 max-md:px-4"
+            className="fixed top-0 left-0 right-0 z-50 px-6 py-3 max-md:px-4"
             style={{
               opacity: isSticky ? 1 : 0,
               pointerEvents: isSticky ? 'auto' : 'none',
@@ -122,7 +129,7 @@ export default function HeroSection() {
                 maxWidth: `${672 + (expandProgress * 400)}px`,
               }}
             >
-              <HeaderSearch />
+              <HeaderSearch isSticky={true} />
             </div>
           </div>
         </div>

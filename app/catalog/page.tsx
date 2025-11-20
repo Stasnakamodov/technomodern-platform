@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import ProductCard from './components/ProductCard'
+import ProductModal from './components/ProductModal'
 import CategoryBrowser from './components/CategoryBrowser'
 import CatalogHeader from '@/components/catalog/CatalogHeader'
 import type { Product, CartItem } from '@/types/catalog.types'
@@ -24,20 +25,38 @@ export default function CatalogPageV2() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('')
   const [showCategorySidebar, setShowCategorySidebar] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Загрузка поискового запроса и категории из URL при монтировании
+  // Открытие модального окна с товаром
+  const openProductModal = (product: Product) => {
+    setSelectedProduct(product)
+    setIsModalOpen(true)
+  }
+
+  // Закрытие модального окна
+  const closeProductModal = () => {
+    setIsModalOpen(false)
+    setSelectedProduct(null)
+  }
+
+  // Загрузка поискового запроса и категории из URL
+  const urlSearch = searchParams.get('search')
+  const urlCategory = searchParams.get('category')
+
   useEffect(() => {
-    const urlSearch = searchParams.get('search')
-    const urlCategory = searchParams.get('category')
-
     if (urlSearch) {
       setSearchQuery(urlSearch)
+    } else {
+      setSearchQuery('')
     }
 
     if (urlCategory) {
       setSelectedCategory(urlCategory)
+    } else {
+      setSelectedCategory('')
     }
-  }, [searchParams])
+  }, [urlSearch, urlCategory])
 
   // Загрузка товаров из Supabase
   useEffect(() => {
@@ -203,11 +222,9 @@ export default function CatalogPageV2() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40 header-animate">
         <div className="header-container px-6 py-4 max-md:px-3 max-md:py-2">
           <div className="flex items-center gap-4 mb-4 max-md:mb-2 max-md:gap-2">
-            <Link href="/">
-              <Button variant="ghost" size="sm" className="gap-2 max-md:gap-1 max-md:px-2">
-                <ArrowLeft className="h-4 w-4 max-md:h-3 max-md:w-3" />
-                <span className="max-md:text-xs">На главную</span>
-              </Button>
+            <Link href="/" className="inline-flex items-center gap-2 max-md:gap-1 px-3 py-2 max-md:px-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors">
+              <ArrowLeft className="h-4 w-4 max-md:h-3 max-md:w-3" />
+              <span className="max-md:text-xs">На главную</span>
             </Link>
             <h1 className="text-2xl font-bold text-gray-900 max-md:text-lg">Каталог товаров</h1>
           </div>
@@ -260,7 +277,7 @@ export default function CatalogPageV2() {
           {/* Боковая панель категорий (десктоп) - появляется первой */}
           <div className={`
             ${showCategorySidebar ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto max-md:p-4' : 'hidden lg:block'}
-            lg:static lg:w-[382px] lg:flex-shrink-0
+            lg:static lg:w-[260px] lg:flex-shrink-0
           `}>
             {showCategorySidebar && (
               <div className="flex items-center justify-between mb-4 lg:hidden max-md:mb-3">
@@ -323,6 +340,7 @@ export default function CatalogPageV2() {
                     <ProductCard
                       product={product}
                       onAddToCart={addToCart}
+                      onViewDetails={openProductModal}
                     />
                   </div>
                 ))}
@@ -440,6 +458,14 @@ export default function CatalogPageV2() {
           </div>
         </>
       )}
+
+      {/* Модальное окно товара */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={closeProductModal}
+        onAddToCart={addToCart}
+      />
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 interface Marketplace {
   name: string
   logo: string
+  scale?: number
 }
 
 const marketplaces: Marketplace[] = [
@@ -13,6 +14,7 @@ const marketplaces: Marketplace[] = [
   { name: 'Wildberries', logo: '/marketplace-logos/wildberries.svg' },
   { name: 'Yandex Market', logo: '/marketplace-logos/yandex-market.svg' },
   { name: 'Alibaba', logo: '/marketplace-logos/alibaba.svg' },
+  { name: 'Made-in-China', logo: '/marketplace-logos/made-in-china.png', scale: 1.1 },
   { name: 'Taobao', logo: '/marketplace-logos/taobao.svg' },
   { name: '1688', logo: '/marketplace-logos/1688.svg' },
   { name: 'Trendyol', logo: '/marketplace-logos/trendyol.svg' },
@@ -60,6 +62,7 @@ export default function MarketplaceBanner() {
                 src={marketplace.logo}
                 alt={marketplace.name}
                 className="max-w-full max-h-full object-contain"
+                style={marketplace.scale ? { transform: `scale(${marketplace.scale})` } : undefined}
                 loading="lazy"
               />
             </div>

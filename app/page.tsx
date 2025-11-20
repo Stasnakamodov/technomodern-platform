@@ -3,6 +3,7 @@ import AboutSection from "@/components/about-section"
 import PresentationSection from "@/components/presentation-section"
 import CatalogSection from "@/components/catalog-section"
 import CurrencyCalculatorSection from "@/components/currency-calculator-section"
+import OrderFormSection from "@/components/order-form-section"
 import FAQSection from "@/components/faq-section"
 import Header from "@/components/header"
 import MarketplaceBanner from "@/components/MarketplaceBanner"
@@ -18,6 +19,7 @@ export default function Home() {
       <CatalogSection />
       <PresentationSection />
       <CurrencyCalculatorSection />
+      <OrderFormSection />
       <FAQSection />
       <Footer />
     </main>
