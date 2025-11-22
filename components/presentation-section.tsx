@@ -1,7 +1,7 @@
 "use client"
 
 import { CheckCircle2, Package, TrendingUp, Shield } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 function CurrencyRotator() {
   const currencies = ["юанях", "рублях", "долларах", "дирхамах"]
@@ -44,6 +44,139 @@ function CurrencyRotator() {
   )
 }
 
+// Mobile carousel component with auto-scroll and swipe
+function MobileStepsCarousel() {
+  const [activeStep, setActiveStep] = useState(0)
+  const [progress, setProgress] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const autoPlayDuration = 4000 // 4 seconds per step
+
+  // Auto-scroll functionality
+  useEffect(() => {
+    if (isPaused) return
+
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          setActiveStep((step) => (step + 1) % steps.length)
+          return 0
+        }
+        return prev + (100 / (autoPlayDuration / 50))
+      })
+    }, 50)
+
+    return () => clearInterval(progressInterval)
+  }, [isPaused])
+
+  // Scroll to active step
+  useEffect(() => {
+    if (scrollRef.current) {
+      const cardWidth = scrollRef.current.offsetWidth
+      scrollRef.current.scrollTo({
+        left: activeStep * cardWidth,
+        behavior: 'smooth'
+      })
+    }
+  }, [activeStep])
+
+  // Handle manual scroll
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const cardWidth = scrollRef.current.offsetWidth
+      const scrollPos = scrollRef.current.scrollLeft
+      const newStep = Math.round(scrollPos / cardWidth)
+      if (newStep !== activeStep) {
+        setActiveStep(newStep)
+        setProgress(0)
+      }
+    }
+  }
+
+  const goToStep = (index: number) => {
+    setActiveStep(index)
+    setProgress(0)
+  }
+
+  return (
+    <div
+      className="md:hidden"
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setTimeout(() => setIsPaused(false), 2000)}
+    >
+      {/* Progress bar */}
+      <div className="flex gap-1 mb-4 px-4">
+        {steps.map((_, index) => (
+          <div key={index} className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-75"
+              style={{
+                width: index === activeStep ? `${progress}%` : index < activeStep ? '100%' : '0%'
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Swipeable cards */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {steps.map((step, index) => (
+          <div
+            key={index}
+            className="flex-shrink-0 w-full snap-center px-4"
+          >
+            <div className={`
+              bg-card rounded-2xl p-6 border-2 transition-all duration-300
+              ${index === activeStep ? 'border-primary shadow-lg shadow-primary/20' : 'border-border'}
+            `}>
+              {/* Step header */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary">{String(index + 1).padStart(2, "0")}</span>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  {step.icon}
+                </div>
+              </div>
+
+              {/* Step content */}
+              <h3 className="font-bold text-xl mb-2">{step.title}</h3>
+              <p className="text-muted-foreground mb-4">{step.description}</p>
+
+              {/* Time badge */}
+              <div className="inline-flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full text-sm">
+                <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6l4 2" />
+                </svg>
+                <span className="text-primary font-medium">{step.time}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Dot indicators */}
+      <div className="flex justify-center gap-2 mt-4">
+        {steps.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToStep(index)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              index === activeStep ? 'bg-primary w-6' : 'bg-border'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function PresentationSection() {
   return (
     <section id="services" className="py-24 px-6 bg-background max-md:py-12 max-md:px-4">
@@ -56,23 +189,27 @@ export default function PresentationSection() {
         </div>
         {/* </CHANGE> */}
 
-        <div className="mb-16 max-md:mb-8">
+        {/* Mobile carousel */}
+        <MobileStepsCarousel />
+
+        {/* Desktop steps - hidden on mobile */}
+        <div className="mb-16 hidden md:block">
           <div className="relative">
             {/* Progress line */}
             <div
-              className="absolute top-12 left-0 right-0 h-0.5 bg-border hidden md:block"
+              className="absolute top-12 left-0 right-0 h-0.5 bg-border"
               style={{ left: "calc(12.5% + 2rem)", right: "calc(12.5% + 2rem)" }}
             />
 
-            <div className="grid md:grid-cols-4 gap-8 relative max-md:gap-6">
+            <div className="grid md:grid-cols-4 gap-8 relative">
               {steps.map((step, index) => (
                 <div key={index} className="flex flex-col items-center text-center">
                   {/* Step circle */}
-                  <div className="relative z-10 mb-6 max-md:mb-4">
-                    <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-background flex items-center justify-center mb-4 max-md:w-16 max-md:h-16 max-md:mb-3">
-                      <div className="text-3xl font-bold text-primary max-md:text-2xl">{String(index + 1).padStart(2, "0")}</div>
+                  <div className="relative z-10 mb-6">
+                    <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-background flex items-center justify-center mb-4">
+                      <div className="text-3xl font-bold text-primary">{String(index + 1).padStart(2, "0")}</div>
                     </div>
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center max-md:h-10 max-md:w-10">
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center">
                       {step.icon}
                     </div>
                   </div>
