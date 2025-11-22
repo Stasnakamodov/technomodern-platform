@@ -72,24 +72,24 @@ export default function Header() {
         </div>
 
         {/* Mobile menu button */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex md:hidden items-center gap-1">
           <a
             href={telegramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-8 h-8 rounded-full bg-[#0088cc] hover:bg-[#0088cc]/90 flex items-center justify-center transition-all"
+            className="w-11 h-11 rounded-full bg-[#0088cc] hover:bg-[#0088cc]/90 flex items-center justify-center transition-all active:scale-95"
             aria-label="Telegram"
           >
-            <Send className="w-3.5 h-3.5 text-white" />
+            <Send className="w-4 h-4 text-white" />
           </a>
           <Button
             variant="ghost"
             size="icon"
-            className="w-8 h-8"
+            className="w-11 h-11"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Меню"
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
         </div>
       </nav>

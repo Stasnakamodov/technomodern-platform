@@ -399,16 +399,16 @@ export default function CurrencyCalculatorSection() {
 
       {/* Модальное окно с формой */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-md:max-w-[calc(100%-32px)] max-md:rounded-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Рассчитать точную сумму</DialogTitle>
-            <DialogDescription className="text-base">
+            <DialogTitle className="text-2xl max-md:text-xl font-bold">Рассчитать точную сумму</DialogTitle>
+            <DialogDescription className="text-base max-md:text-sm">
               Оставьте заявку, и наш менеджер свяжется с вами для точного расчета
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-4 max-md:space-y-3 mt-4 max-md:mt-3">
+            <div className="space-y-2 max-md:space-y-1.5">
               <Label htmlFor="name" className="text-sm font-semibold">
                 Ваше имя *
               </Label>
@@ -418,11 +418,11 @@ export default function CurrencyCalculatorSection() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                className="h-11"
+                className="h-11 max-md:h-12 text-base"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 max-md:space-y-1.5">
               <Label htmlFor="contact" className="text-sm font-semibold">
                 Email или телефон *
               </Label>
@@ -432,12 +432,12 @@ export default function CurrencyCalculatorSection() {
                 value={formData.contact}
                 onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
                 required
-                className="h-11"
+                className="h-11 max-md:h-12 text-base"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-3 max-md:gap-2">
+              <div className="space-y-2 max-md:space-y-1.5">
                 <Label htmlFor="amountForm" className="text-sm font-semibold">
                   Сумма *
                 </Label>
@@ -448,11 +448,11 @@ export default function CurrencyCalculatorSection() {
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   required
-                  className="h-11"
+                  className="h-11 max-md:h-12 text-base"
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 max-md:space-y-1.5">
                 <Label htmlFor="fromCurrencySelect" className="text-sm font-semibold">
                   Из валюты *
                 </Label>
@@ -460,7 +460,7 @@ export default function CurrencyCalculatorSection() {
                   value={formData.fromCurrencyForm}
                   onValueChange={(value) => setFormData({ ...formData, fromCurrencyForm: value })}
                 >
-                  <SelectTrigger className="h-11">
+                  <SelectTrigger className="h-11 max-md:h-12">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -474,7 +474,7 @@ export default function CurrencyCalculatorSection() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 max-md:space-y-1.5">
               <Label htmlFor="toCurrencySelect" className="text-sm font-semibold">
                 В валюту *
               </Label>
@@ -482,7 +482,7 @@ export default function CurrencyCalculatorSection() {
                 value={formData.toCurrencyForm}
                 onValueChange={(value) => setFormData({ ...formData, toCurrencyForm: value })}
               >
-                <SelectTrigger className="h-11">
+                <SelectTrigger className="h-11 max-md:h-12">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -513,12 +513,12 @@ export default function CurrencyCalculatorSection() {
               <p className="text-red-500 text-sm">{submitError}</p>
             )}
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 max-md:gap-2 pt-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsModalOpen(false)}
-                className="flex-1 h-11"
+                className="flex-1 h-11 max-md:h-12 text-base"
                 disabled={isSubmitting}
               >
                 Отмена
@@ -526,7 +526,7 @@ export default function CurrencyCalculatorSection() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 h-11 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:opacity-90 text-white disabled:opacity-50"
+                className="flex-1 h-11 max-md:h-12 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:opacity-90 text-white disabled:opacity-50 text-base"
               >
                 {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
               </Button>

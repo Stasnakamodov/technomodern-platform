@@ -198,15 +198,18 @@ function MobileStepsCarousel() {
       </div>
 
       {/* Dot indicators */}
-      <div className="flex justify-center gap-2 mt-4">
+      <div className="flex justify-center gap-1 mt-4">
         {steps.map((_, index) => (
           <button
             key={index}
             onClick={() => goToStep(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === activeStep ? 'bg-primary w-6' : 'bg-border'
-            }`}
-          />
+            className="p-3 -m-1"
+            aria-label={`Шаг ${index + 1}`}
+          >
+            <div className={`h-2 rounded-full transition-all duration-300 ${
+              index === activeStep ? 'bg-primary w-6' : 'bg-border w-2'
+            }`} />
+          </button>
         ))}
       </div>
     </div>

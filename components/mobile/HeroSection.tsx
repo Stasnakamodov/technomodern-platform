@@ -78,16 +78,17 @@ export default function HeroSectionMobile() {
       </div>
 
       <div className="max-w-7xl mx-auto w-full relative z-10">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
-          <h1 className="text-4xl font-bold leading-tight px-2">
-            Помогаем селлерам закупать у <span className="text-primary">зарубежных поставщиков</span>
+        <div className="max-w-4xl mx-auto text-center space-y-5">
+          <h1 className="text-3xl font-bold leading-tight px-4">
+            Закупки у{' '}
+            <span className="text-primary">зарубежных поставщиков</span>
           </h1>
 
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2">
-            Для продавцов на Ozon, Wildberries и Яндекс Маркете. +100500 товаров · Собственная B2B сеть · CRM система
+          <p className="text-base text-muted-foreground max-w-sm mx-auto leading-relaxed px-4">
+            Для селлеров Ozon, Wildberries и Яндекс Маркет
           </p>
 
-          <div className="flex flex-col items-center gap-6 pt-4 px-4 w-full max-w-2xl mx-auto">
+          <div className="flex flex-col items-center gap-4 pt-2 px-4 w-full max-w-md mx-auto">
             {/* Поисковая строка в hero - placeholder когда sticky */}
             <div
               ref={searchRef}
@@ -100,8 +101,8 @@ export default function HeroSectionMobile() {
               <MobileHeaderSearch />
             </div>
             <Link href="/catalog" className="w-full">
-              <Button size="lg" variant="outline" className="text-base px-8 py-6 bg-transparent w-full">
-                Создать заказ
+              <Button size="lg" variant="outline" className="text-lg px-8 py-7 bg-transparent w-full font-semibold">
+                Смотреть каталог
               </Button>
             </Link>
           </div>

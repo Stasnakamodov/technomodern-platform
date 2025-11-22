@@ -113,6 +113,8 @@ export default function CatalogSection() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [showSwipeHint, setShowSwipeHint] = useState(true)
 
   // Статические данные для категорий
   const totalProducts = 259
@@ -173,6 +175,16 @@ export default function CatalogSection() {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
       setCanScrollLeft(scrollLeft > 10)
+
+      // Calculate active index for mobile dots
+      const cardWidth = 240 + 16 // card width + gap
+      const newIndex = Math.round(scrollLeft / cardWidth)
+      setActiveIndex(Math.min(newIndex, displayCategories.length - 1))
+
+      // Hide swipe hint after first scroll
+      if (scrollLeft > 20) {
+        setShowSwipeHint(false)
+      }
     }
   }
 
@@ -242,11 +254,11 @@ export default function CatalogSection() {
                       <h3 className="text-2xl max-md:text-lg font-bold">{category.name}</h3>
                       <ArrowRight className="w-5 h-5 max-md:w-4 max-md:h-4 text-primary group-hover:translate-x-1 transition-transform" />
                     </div>
-                    <div className="flex flex-wrap gap-2 max-md:gap-1">
+                    <div className="flex flex-wrap gap-2 max-md:gap-1.5">
                       {category.tags.map((tag, tagIndex) => (
                         <span
                           key={tagIndex}
-                          className="text-xs max-md:text-[10px] px-3 py-1 max-md:px-2 max-md:py-0.5 rounded-full bg-secondary text-secondary-foreground"
+                          className="text-xs px-3 py-1 max-md:px-2.5 max-md:py-1 rounded-full bg-secondary text-secondary-foreground"
                         >
                           {tag}
                         </span>
@@ -280,6 +292,38 @@ export default function CatalogSection() {
               <ChevronRight className="w-6 h-6 max-md:w-4 max-md:h-4 text-gray-600" />
             </button>
           )}
+
+          {/* Mobile swipe hint */}
+          {showSwipeHint && (
+            <div className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-primary animate-pulse">
+              <span className="text-xs font-medium">Листайте</span>
+              <ChevronRight className="w-4 h-4" />
+            </div>
+          )}
+        </div>
+
+        {/* Mobile dot indicators */}
+        <div className="md:hidden flex justify-center gap-1.5 mt-4">
+          {displayCategories.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                if (scrollContainerRef.current) {
+                  const cardWidth = 240 + 16
+                  scrollContainerRef.current.scrollTo({
+                    left: index * cardWidth,
+                    behavior: 'smooth'
+                  })
+                }
+              }}
+              className="p-2"
+              aria-label={`Категория ${index + 1}`}
+            >
+              <div className={`h-2 rounded-full transition-all duration-300 ${
+                index === activeIndex ? 'bg-primary w-6' : 'bg-border w-2'
+              }`} />
+            </button>
+          ))}
         </div>
 
         <div className="mt-12 max-md:mt-6 text-center">

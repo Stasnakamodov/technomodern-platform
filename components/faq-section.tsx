@@ -150,20 +150,21 @@ export default function FAQSection() {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 max-md:p-5 relative animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute top-4 right-4 max-md:top-3 max-md:right-3 text-gray-400 hover:text-gray-600 transition-colors p-2 -m-2"
+              aria-label="Закрыть"
             >
               <X className="w-6 h-6" />
             </button>
 
-            <h3 className="text-2xl font-bold mb-2">Свяжитесь с нами</h3>
-            <p className="text-gray-600 mb-6">Оставьте свои контакты, и мы свяжемся с вами в ближайшее время</p>
+            <h3 className="text-2xl max-md:text-xl font-bold mb-2">Свяжитесь с нами</h3>
+            <p className="text-gray-600 mb-6 max-md:mb-4 max-md:text-sm">Оставьте свои контакты, и мы свяжемся с вами в ближайшее время</p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 max-md:space-y-3">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-2">
+                <label htmlFor="name" className="block text-sm font-medium mb-2 max-md:mb-1.5">
                   Имя
                 </label>
                 <input
@@ -173,13 +174,13 @@ export default function FAQSection() {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background"
+                  className="w-full px-4 py-3 max-md:py-3.5 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-base"
                   placeholder="Ваше имя"
                 />
               </div>
 
               <div>
-                <label htmlFor="contact" className="block text-sm font-medium mb-2">
+                <label htmlFor="contact" className="block text-sm font-medium mb-2 max-md:mb-1.5">
                   Email или телефон
                 </label>
                 <input
@@ -189,13 +190,13 @@ export default function FAQSection() {
                   value={formData.contact}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background"
+                  className="w-full px-4 py-3 max-md:py-3.5 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background text-base"
                   placeholder="example@mail.com или +7 (999) 123-45-67"
                 />
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium mb-2">
+                <label htmlFor="message" className="block text-sm font-medium mb-2 max-md:mb-1.5">
                   Сообщение
                 </label>
                 <textarea
@@ -205,7 +206,7 @@ export default function FAQSection() {
                   onChange={handleInputChange}
                   required
                   rows={4}
-                  className="w-full px-4 py-3 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none bg-background"
+                  className="w-full px-4 py-3 max-md:py-3.5 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none bg-background text-base"
                   placeholder="Расскажите о вашем вопросе..."
                 />
               </div>
@@ -217,7 +218,7 @@ export default function FAQSection() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl hover:shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 py-3.5 max-md:py-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl hover:shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-base"
               >
                 {isSubmitting ? 'Отправка...' : 'Отправить'}
               </button>
