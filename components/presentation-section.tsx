@@ -49,12 +49,14 @@ function MobileStepsCarousel() {
   const [activeStep, setActiveStep] = useState(0)
   const [progress, setProgress] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const [isUserScrolling, setIsUserScrolling] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const autoPlayDuration = 4000 // 4 seconds per step
 
-  // Auto-scroll functionality
+  // Auto-scroll functionality - blocked during user interaction
   useEffect(() => {
-    if (isPaused) return
+    if (isPaused || isUserScrolling) return
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -67,42 +69,76 @@ function MobileStepsCarousel() {
     }, 50)
 
     return () => clearInterval(progressInterval)
-  }, [isPaused])
+  }, [isPaused, isUserScrolling])
 
-  // Scroll to active step
+  // Scroll to active step - only when auto-scrolling (not user scrolling)
   useEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && !isUserScrolling) {
       const cardWidth = scrollRef.current.offsetWidth
       scrollRef.current.scrollTo({
         left: activeStep * cardWidth,
         behavior: 'smooth'
       })
     }
-  }, [activeStep])
+  }, [activeStep, isUserScrolling])
 
-  // Handle manual scroll
+  // Handle manual scroll with debounce
   const handleScroll = () => {
-    if (scrollRef.current) {
-      const cardWidth = scrollRef.current.offsetWidth
-      const scrollPos = scrollRef.current.scrollLeft
-      const newStep = Math.round(scrollPos / cardWidth)
-      if (newStep !== activeStep) {
-        setActiveStep(newStep)
-        setProgress(0)
-      }
+    if (!scrollRef.current) return
+
+    // Clear previous timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current)
     }
+
+    // Debounce: wait for scroll to completely stop
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (scrollRef.current) {
+        const cardWidth = scrollRef.current.offsetWidth
+        const scrollPos = scrollRef.current.scrollLeft
+        const newStep = Math.round(scrollPos / cardWidth)
+
+        if (newStep >= 0 && newStep < steps.length) {
+          setActiveStep(newStep)
+          setProgress(0)
+        }
+      }
+      // End user scrolling mode after scroll settles
+      setIsUserScrolling(false)
+    }, 150)
   }
 
   const goToStep = (index: number) => {
+    setIsUserScrolling(false)
     setActiveStep(index)
     setProgress(0)
+    setIsPaused(true)
+    setTimeout(() => setIsPaused(false), 3000)
+  }
+
+  const handleTouchStart = () => {
+    setIsPaused(true)
+    setIsUserScrolling(true)
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current)
+    }
+  }
+
+  const handleTouchEnd = () => {
+    // Resume auto-scroll after delay
+    setTimeout(() => {
+      if (!isUserScrolling) {
+        setIsPaused(false)
+      }
+    }, 3000)
   }
 
   return (
     <div
       className="md:hidden"
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setTimeout(() => setIsPaused(false), 2000)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Progress bar */}
       <div className="flex gap-1 mb-4 px-4">
