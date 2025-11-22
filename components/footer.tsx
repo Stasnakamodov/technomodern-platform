@@ -19,7 +19,7 @@ export default function Footer() {
               <span className="text-primary">Модерн</span>
             </div>
             <p className="text-sm text-muted-foreground mb-4 max-md:text-xs">
-              Платежный агент для международных сделок. Помогаем селлерам закупать товары у зарубежных поставщиков.
+              Агент для международных сделок. Помогаем селлерам закупать товары у зарубежных поставщиков.
             </p>
             <div className="flex gap-3">
               <a
