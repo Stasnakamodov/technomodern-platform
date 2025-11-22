@@ -11,10 +11,10 @@ export default function Header() {
   const telegramUrl = process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/technomodern_support"
 
   return (
-    <header className="relative z-50 px-8 py-6 max-md:px-4 max-md:py-4 bg-white border-b border-gray-200/20 shadow-sm">
-      <nav className="max-w-7xl mx-auto flex items-center max-md:gap-2">
+    <header className="relative z-50 px-8 py-6 max-md:px-4 max-md:py-3 bg-white border-b border-gray-200/20 shadow-sm">
+      <nav className="max-w-7xl mx-auto flex items-center justify-between max-md:gap-2">
         {/* Logo */}
-        <div className="text-2xl md:text-3xl font-bold flex-shrink-0 max-md:text-xl">
+        <div className="text-2xl md:text-3xl font-bold flex-shrink-0 max-md:text-lg">
           <span className="text-foreground whitespace-nowrap">Техно</span>
           <span className="text-primary whitespace-nowrap">Модерн</span>
         </div>
@@ -75,19 +75,19 @@ export default function Header() {
             href={telegramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 rounded-full bg-[#0088cc] hover:bg-[#0088cc]/90 flex items-center justify-center transition-all"
+            className="w-8 h-8 rounded-full bg-[#0088cc] hover:bg-[#0088cc]/90 flex items-center justify-center transition-all"
             aria-label="Telegram"
           >
-            <Send className="w-4 h-4 text-white" />
+            <Send className="w-3.5 h-3.5 text-white" />
           </a>
           <Button
             variant="ghost"
             size="icon"
-            className="w-10 h-10"
+            className="w-8 h-8"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Меню"
           >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </nav>

@@ -285,32 +285,32 @@ export default function HeaderSearch({ onExpandChange, isSticky = false }: Heade
     <div ref={containerRef} className="relative w-full">
       <form
         onSubmit={handleSearch}
-        className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-border rounded-full px-6 py-3 shadow-sm hover:shadow-md transition-shadow w-full"
+        className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-border rounded-full px-6 py-3 max-md:px-4 max-md:py-2 shadow-sm hover:shadow-md transition-shadow w-full"
       >
-        <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+        <Search className="h-5 w-5 max-md:h-4 max-md:w-4 text-muted-foreground flex-shrink-0" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onClick={handleInputClick}
           placeholder={placeholders[placeholderIndex]}
-          className="flex-1 bg-transparent border-none outline-none text-base text-foreground placeholder:text-muted-foreground min-w-0 transition-all duration-300"
+          className="flex-1 bg-transparent border-none outline-none text-base max-md:text-sm text-foreground placeholder:text-muted-foreground min-w-0 transition-all duration-300"
         />
 
         {/* Иконки поиска справа */}
-        <div className="flex items-center gap-1 border-l border-gray-300 pl-3 ml-2">
+        <div className="flex items-center gap-1 max-md:gap-0.5 border-l border-gray-300 pl-3 ml-2 max-md:pl-2 max-md:ml-1">
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation()
               setActiveTool(activeTool === 'photo' ? null : 'photo')
             }}
-            className={`p-2 rounded-full transition-colors group ${
+            className={`p-2 max-md:p-1.5 rounded-full transition-colors group ${
               activeTool === 'photo' ? 'bg-blue-100' : 'hover:bg-purple-100'
             }`}
             title="Поиск по фото"
           >
-            <Camera className={`h-5 w-5 transition-colors ${
+            <Camera className={`h-5 w-5 max-md:h-4 max-md:w-4 transition-colors ${
               activeTool === 'photo' ? 'text-blue-600' : 'text-gray-500 group-hover:text-purple-600'
             }`} />
           </button>
@@ -320,12 +320,12 @@ export default function HeaderSearch({ onExpandChange, isSticky = false }: Heade
               e.stopPropagation()
               setActiveTool(activeTool === 'supplier' ? null : 'supplier')
             }}
-            className={`p-2 rounded-full transition-colors group ${
+            className={`p-2 max-md:p-1.5 rounded-full transition-colors group ${
               activeTool === 'supplier' ? 'bg-orange-100' : 'hover:bg-purple-100'
             }`}
             title="Найти поставщика"
           >
-            <Globe className={`h-5 w-5 transition-colors ${
+            <Globe className={`h-5 w-5 max-md:h-4 max-md:w-4 transition-colors ${
               activeTool === 'supplier' ? 'text-orange-600' : 'text-gray-500 group-hover:text-purple-600'
             }`} />
           </button>
@@ -335,12 +335,12 @@ export default function HeaderSearch({ onExpandChange, isSticky = false }: Heade
               e.stopPropagation()
               setActiveTool(activeTool === 'link' ? null : 'link')
             }}
-            className={`p-2 rounded-full transition-colors group ${
+            className={`p-2 max-md:p-1.5 rounded-full transition-colors group ${
               activeTool === 'link' ? 'bg-green-100' : 'hover:bg-purple-100'
             }`}
             title="Поиск по ссылке"
           >
-            <Link2 className={`h-5 w-5 transition-colors ${
+            <Link2 className={`h-5 w-5 max-md:h-4 max-md:w-4 transition-colors ${
               activeTool === 'link' ? 'text-green-600' : 'text-gray-500 group-hover:text-purple-600'
             }`} />
           </button>
@@ -352,10 +352,10 @@ export default function HeaderSearch({ onExpandChange, isSticky = false }: Heade
                 e.stopPropagation()
                 closeMenu()
               }}
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors ml-1"
+              className="p-2 max-md:p-1.5 rounded-full hover:bg-gray-100 text-gray-500 transition-colors ml-1"
               title="Закрыть"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 max-md:h-4 max-md:w-4" />
             </button>
           )}
         </div>

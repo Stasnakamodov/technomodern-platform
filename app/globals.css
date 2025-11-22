@@ -252,6 +252,24 @@
   width: 672px;
 }
 
+/* Мобильная адаптация анимаций */
+@media (max-width: 768px) {
+  .header-container {
+    width: 100%;
+    animation: none;
+  }
+
+  .search-container-animate {
+    width: 100%;
+    animation: none;
+  }
+
+  .search-panel-animate {
+    width: 100%;
+    animation: none;
+  }
+}
+
 /* Каскадная анимация для товаров */
 .product-card {
   animation: fadeInUp 0.4s ease-out forwards;

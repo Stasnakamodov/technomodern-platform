@@ -197,13 +197,13 @@ export default function CatalogSection() {
   }
 
   return (
-    <section id="catalog" className="py-24 px-6 bg-gradient-to-br from-background to-primary/5 max-md:py-8">
+    <section id="catalog" className="py-24 px-6 max-md:px-4 bg-gradient-to-br from-background to-primary/5 max-md:py-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16 max-md:mb-8">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+        <div className="mb-16 max-md:mb-6">
+          <h2 className="text-4xl md:text-5xl max-md:text-2xl font-bold mb-4 max-md:mb-2">
             Товары от проверенных <span className="text-primary">поставщиков</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl">
+          <p className="text-xl max-md:text-sm text-muted-foreground max-w-3xl">
             Выбирайте товары из нашего каталога или добавляйте своих поставщиков. Все цены актуальны, все поставщики
             проверены.
           </p>
@@ -218,10 +218,10 @@ export default function CatalogSection() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {displayCategories.map((category, index) => (
-              <Link key={index} href={`/catalog?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 w-[280px] md:w-[300px]">
+              <Link key={index} href={`/catalog?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 w-[280px] md:w-[300px] max-md:w-[240px]">
                 <Card className="group overflow-hidden hover:border-primary/50 transition-all hover:shadow-xl cursor-pointer h-full">
                   <CardContent className="p-0">
-                  <div className="relative h-48 bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
+                  <div className="relative h-48 max-md:h-36 bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
                     {category.image ? (
                       <Image
                         src={category.image || "/placeholder.svg"}
@@ -231,22 +231,22 @@ export default function CatalogSection() {
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div className="w-20 h-20 max-md:w-14 max-md:h-14 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                           {category.icon}
                         </div>
                       </div>
                     )}
                   </div>
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-2xl font-bold">{category.name}</h3>
-                      <ArrowRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+                  <div className="p-6 max-md:p-4">
+                    <div className="flex items-center justify-between mb-4 max-md:mb-2">
+                      <h3 className="text-2xl max-md:text-lg font-bold">{category.name}</h3>
+                      <ArrowRight className="w-5 h-5 max-md:w-4 max-md:h-4 text-primary group-hover:translate-x-1 transition-transform" />
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 max-md:gap-1">
                       {category.tags.map((tag, tagIndex) => (
                         <span
                           key={tagIndex}
-                          className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground"
+                          className="text-xs max-md:text-[10px] px-3 py-1 max-md:px-2 max-md:py-0.5 rounded-full bg-secondary text-secondary-foreground"
                         >
                           {tag}
                         </span>
@@ -263,10 +263,10 @@ export default function CatalogSection() {
           {canScrollLeft && (
             <button
               onClick={scrollLeft}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 max-md:translate-x-0 z-10 w-12 h-12 max-md:w-8 max-md:h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200 max-md:hidden"
               aria-label="Показать предыдущие категории"
             >
-              <ChevronLeft className="w-6 h-6 text-gray-600" />
+              <ChevronLeft className="w-6 h-6 max-md:w-4 max-md:h-4 text-gray-600" />
             </button>
           )}
 
@@ -274,19 +274,19 @@ export default function CatalogSection() {
           {canScrollRight && (
             <button
               onClick={scrollRight}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200"
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 max-md:translate-x-0 z-10 w-12 h-12 max-md:w-8 max-md:h-8 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200 max-md:hidden"
               aria-label="Показать больше категорий"
             >
-              <ChevronRight className="w-6 h-6 text-gray-600" />
+              <ChevronRight className="w-6 h-6 max-md:w-4 max-md:h-4 text-gray-600" />
             </button>
           )}
         </div>
 
-        <div className="mt-12 text-center">
+        <div className="mt-12 max-md:mt-6 text-center">
           <Link href="/catalog">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6">
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg max-md:text-sm px-8 py-6 max-md:px-6 max-md:py-4">
               Открыть каталог
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-5 w-5 max-md:h-4 max-md:w-4" />
             </Button>
           </Link>
         </div>
