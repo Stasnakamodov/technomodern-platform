@@ -50,6 +50,8 @@ export default function CurrencyCalculatorSection() {
   const [toCurrency, setToCurrency] = useState("RUB")
   const [amount, setAmount] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: "",
     contact: "",
@@ -72,12 +74,37 @@ export default function CurrencyCalculatorSection() {
     setToCurrency(temp)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Form data:", formData)
-    // Здесь будет логика отправки формы
-    setIsModalOpen(false)
-    setFormData({ name: "", contact: "", amount: "", fromCurrencyForm: "USD", toCurrencyForm: "RUB", message: "" })
+    setIsSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      const response = await fetch('/api/orders/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          contact: formData.contact,
+          message: `Расчёт конвертации: ${formData.amount} ${formData.fromCurrencyForm} → ${formData.toCurrencyForm}. ${formData.message}`,
+          source: 'calculator_form'
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Ошибка отправки формы')
+      }
+
+      setIsModalOpen(false)
+      setFormData({ name: "", contact: "", amount: "", fromCurrencyForm: "USD", toCurrencyForm: "RUB", message: "" })
+      alert("Спасибо! Мы свяжемся с вами в ближайшее время.")
+    } catch (error) {
+      setSubmitError('Не удалось отправить форму. Попробуйте позже.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   // Открытие модалки с автозаполнением текущих данных калькулятора
@@ -251,6 +278,7 @@ export default function CurrencyCalculatorSection() {
               {/* Кнопки */}
               <div className="space-y-3">
                 <Button
+                  onClick={openModalWithData}
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:opacity-90 transition-opacity text-white border-0"
                   size="lg"
                 >
@@ -352,6 +380,7 @@ export default function CurrencyCalculatorSection() {
           {/* Buttons */}
           <div className="space-y-2">
             <Button
+              onClick={openModalWithData}
               className="w-full h-10 text-sm font-semibold bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:opacity-90 text-white border-0"
             >
               Зафиксировать курс
@@ -480,20 +509,26 @@ export default function CurrencyCalculatorSection() {
               />
             </div>
 
+            {submitError && (
+              <p className="text-red-500 text-sm">{submitError}</p>
+            )}
+
             <div className="flex gap-3 pt-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsModalOpen(false)}
                 className="flex-1 h-11"
+                disabled={isSubmitting}
               >
                 Отмена
               </Button>
               <Button
                 type="submit"
-                className="flex-1 h-11 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:opacity-90 text-white"
+                disabled={isSubmitting}
+                className="flex-1 h-11 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 hover:opacity-90 text-white disabled:opacity-50"
               >
-                Отправить заявку
+                {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
               </Button>
             </div>
           </form>

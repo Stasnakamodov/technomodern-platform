@@ -41,7 +41,7 @@ export default function Header() {
               Калькулятор
             </a>
             <a
-              href="#contacts"
+              href="#order"
               className="px-9 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-all"
             >
               Контакты
@@ -51,9 +51,11 @@ export default function Header() {
 
         {/* Desktop Contact section */}
         <div className="hidden md:flex items-center flex-shrink-0 ml-auto pl-6">
-          <Button size="default" className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 md:px-6 md:py-5 text-sm md:text-base">
-            Связаться с нами
-          </Button>
+          <a href="#order">
+            <Button size="default" className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 md:px-6 md:py-5 text-sm md:text-base">
+              Связаться с нами
+            </Button>
+          </a>
 
           {/* Social media icons */}
           <div className="flex items-center ml-3">
@@ -118,13 +120,14 @@ export default function Header() {
               Калькулятор
             </a>
             <div className="px-8 py-4">
-              <Button
-                size="default"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Связаться с нами
-              </Button>
+              <a href="#order" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  size="default"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  Связаться с нами
+                </Button>
+              </a>
             </div>
           </nav>
         </div>

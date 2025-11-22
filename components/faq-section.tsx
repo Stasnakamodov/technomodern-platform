@@ -57,17 +57,44 @@ export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState({ name: "", contact: "", message: "" })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const toggleQuestion = (index: number) => {
     setOpenIndex(openIndex === index ? null : index)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Form submitted:", formData)
-    alert("Спасибо! Мы свяжемся с вами в ближайшее время.")
-    setIsModalOpen(false)
-    setFormData({ name: "", contact: "", message: "" })
+    setIsSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      const response = await fetch('/api/orders/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          contact: formData.contact,
+          message: formData.message,
+          source: 'faq_form'
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Ошибка отправки формы')
+      }
+
+      setIsModalOpen(false)
+      setFormData({ name: "", contact: "", message: "" })
+      alert("Спасибо! Мы свяжемся с вами в ближайшее время.")
+    } catch (error) {
+      setSubmitError('Не удалось отправить форму. Попробуйте позже.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -183,11 +210,16 @@ export default function FAQSection() {
                 />
               </div>
 
+              {submitError && (
+                <p className="text-red-500 text-sm">{submitError}</p>
+              )}
+
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl hover:shadow-lg transition-all hover:scale-105"
+                disabled={isSubmitting}
+                className="w-full px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl hover:shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Отправить
+                {isSubmitting ? 'Отправка...' : 'Отправить'}
               </button>
             </form>
           </div>
