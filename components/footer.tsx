@@ -1,6 +1,6 @@
 "use client"
 
-import { Send, MessageCircle, Mail, Phone, MapPin } from "lucide-react"
+import { Send, MessageCircle, Mail, Phone } from "lucide-react"
 import Link from "next/link"
 
 export default function Footer() {
@@ -97,10 +97,6 @@ export default function Footer() {
                 <a href={`tel:+${whatsappNumber}`} className="hover:text-primary transition-colors">
                   +7 (999) 123-45-67
                 </a>
-              </li>
-              <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
-                <span>Москва, Россия</span>
               </li>
             </ul>
           </div>
