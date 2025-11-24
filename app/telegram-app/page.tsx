@@ -50,7 +50,7 @@ interface Product {
   name: string
   price: number | null
   min_order: number | null
-  image_url: string | null
+  images: string[] | null
   category_id: string
 }
 
@@ -91,27 +91,44 @@ export default function TelegramAppPage() {
   }, [])
 
   const loadCategories = async () => {
-    const { data } = await supabase
+    // Get all categories
+    const { data: allCategories } = await supabase
       .from('categories')
       .select('*')
       .order('name')
 
-    if (data) {
-      setCategories(data)
-      if (data.length > 0) {
-        loadProducts(data[0].slug)
-        setSelectedCategory(data[0].slug)
+    if (allCategories) {
+      // Filter to only categories with products
+      const categoriesWithProducts = []
+
+      for (const category of allCategories) {
+        const { count } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .eq('category_id', category.id)
+
+        if (count && count > 0) {
+          categoriesWithProducts.push(category)
+        }
+      }
+
+      setCategories(categoriesWithProducts)
+
+      // Load products from first category
+      if (categoriesWithProducts.length > 0) {
+        loadProducts(categoriesWithProducts[0].id)
+        setSelectedCategory(categoriesWithProducts[0].id)
       }
     }
     setLoading(false)
   }
 
-  const loadProducts = async (categorySlug: string) => {
+  const loadProducts = async (categoryId: string) => {
     setLoading(true)
     const { data } = await supabase
       .from('products')
       .select('*')
-      .eq('category', categorySlug)
+      .eq('category_id', categoryId)
       .limit(20)
 
     if (data) {
@@ -120,9 +137,9 @@ export default function TelegramAppPage() {
     setLoading(false)
   }
 
-  const handleCategoryChange = (categorySlug: string) => {
-    setSelectedCategory(categorySlug)
-    loadProducts(categorySlug)
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId)
+    loadProducts(categoryId)
   }
 
   const handleProductClick = (product: Product) => {
@@ -179,12 +196,12 @@ export default function TelegramAppPage() {
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => handleCategoryChange(cat.slug)}
+              onClick={() => handleCategoryChange(cat.id)}
               className="px-4 py-2 rounded-full whitespace-nowrap font-medium transition-all"
               style={{
-                backgroundColor: selectedCategory === cat.slug ? buttonColor : 'transparent',
-                color: selectedCategory === cat.slug ? (tg?.themeParams?.button_text_color || '#ffffff') : textColor,
-                border: selectedCategory === cat.slug ? 'none' : `1px solid ${tg?.themeParams?.hint_color || '#e5e7eb'}`
+                backgroundColor: selectedCategory === cat.id ? buttonColor : 'transparent',
+                color: selectedCategory === cat.id ? (tg?.themeParams?.button_text_color || '#ffffff') : textColor,
+                border: selectedCategory === cat.id ? 'none' : `1px solid ${tg?.themeParams?.hint_color || '#e5e7eb'}`
               }}
             >
               {cat.name}
@@ -211,10 +228,10 @@ export default function TelegramAppPage() {
               }}
             >
               {/* Product Image */}
-              {product.image_url ? (
+              {product.images && product.images.length > 0 ? (
                 <div className="aspect-square relative">
                   <img
-                    src={product.image_url}
+                    src={product.images[0]}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
