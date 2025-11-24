@@ -20,6 +20,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# MCP config with secrets
+claude_mcp_config.json
+
 # vercel
 .vercel
 
