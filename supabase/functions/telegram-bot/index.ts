@@ -53,19 +53,21 @@ interface CallbackQuery {
 const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SECRET_TOKEN = "cba2693f7de3458e9177baf20ba9680c";
 
 // Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-// Telegram API helper
+// Telegram API helper with retry handling
 async function sendMessage(
   chatId: number,
   text: string,
   options: {
     parse_mode?: string;
     reply_markup?: object;
-  } = {}
-) {
+  } = {},
+  retryCount = 0
+): Promise<any> {
   const response = await fetch(
     `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
     {
@@ -80,9 +82,19 @@ async function sendMessage(
     }
   );
   const result = await response.json();
+
   if (!result.ok) {
     console.error("Telegram API error (sendMessage):", result);
+
+    // Handle flood limits
+    if (result.parameters?.retry_after && retryCount < 3) {
+      const delay = result.parameters.retry_after * 1000;
+      console.log(`Rate limited. Retrying after ${result.parameters.retry_after}s...`);
+      await new Promise(r => setTimeout(r, delay));
+      return sendMessage(chatId, text, options, retryCount + 1);
+    }
   }
+
   return result;
 }
 
@@ -186,7 +198,7 @@ async function handleStart(message: TelegramMessage) {
   let text = `<b>Добро пожаловать, ${firstName}!</b>\n\n`;
   text += `Я бот ТехноМодерн - помогу вам с закупками товаров из Китая.\n\n`;
 
-  const keyboard: { text: string; callback_data: string }[][] = [];
+  const keyboard: { text: string; callback_data?: string; url?: string }[][] = [];
 
   if (isUserAdmin) {
     text += `<i>У вас есть права администратора</i>\n\n`;
@@ -200,8 +212,11 @@ async function handleStart(message: TelegramMessage) {
   }
 
   keyboard.push([
-    { text: "📦 Каталог", callback_data: "catalog" },
+    { text: "📦 Открыть каталог", web_app: { url: "https://techno-modern.ru/telegram-app" } },
     { text: "📝 Оставить заявку", callback_data: "new_order" },
+  ]);
+  keyboard.push([
+    { text: "🌐 Перейти на сайт", url: "https://techno-modern.ru" },
   ]);
   keyboard.push([{ text: "📞 Связаться с нами", callback_data: "contact" }]);
 
@@ -565,6 +580,13 @@ async function handleMessage(message: TelegramMessage) {
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response("OK", { status: 200 });
+  }
+
+  // Verify Secret Token
+  const secretHeader = req.headers.get("X-Telegram-Bot-Api-Secret-Token");
+  if (secretHeader !== SECRET_TOKEN) {
+    console.error("Invalid secret token:", secretHeader);
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {
