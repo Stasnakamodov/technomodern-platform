@@ -91,26 +91,30 @@ export default function TelegramAppPage() {
   }, [])
 
   const loadCategories = async () => {
-    // Get all categories
-    const { data: allCategories } = await supabase
-      .from('categories')
-      .select('*')
-      .order('name')
+    try {
+      // Get all products to count by category
+      const { data: allProducts } = await supabase
+        .from('products')
+        .select('category_id')
 
-    if (allCategories) {
-      // Filter to only categories with products
-      const categoriesWithProducts = []
-
-      for (const category of allCategories) {
-        const { count } = await supabase
-          .from('products')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id)
-
-        if (count && count > 0) {
-          categoriesWithProducts.push(category)
+      // Count products per category
+      const productCountByCategory: Record<string, number> = {}
+      allProducts?.forEach(product => {
+        if (product.category_id) {
+          productCountByCategory[product.category_id] = (productCountByCategory[product.category_id] || 0) + 1
         }
-      }
+      })
+
+      // Get all categories
+      const { data: allCategories } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name')
+
+      // Filter to only categories with products
+      const categoriesWithProducts = allCategories?.filter(
+        category => productCountByCategory[category.id] > 0
+      ) || []
 
       setCategories(categoriesWithProducts)
 
@@ -119,8 +123,11 @@ export default function TelegramAppPage() {
         loadProducts(categoriesWithProducts[0].id)
         setSelectedCategory(categoriesWithProducts[0].id)
       }
+    } catch (error) {
+      console.error('Error loading categories:', error)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const loadProducts = async (categoryId: string) => {
