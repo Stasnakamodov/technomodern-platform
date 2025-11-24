@@ -99,19 +99,19 @@ export default function TelegramAppPage() {
     if (data) {
       setCategories(data)
       if (data.length > 0) {
-        loadProducts(data[0].id)
-        setSelectedCategory(data[0].id)
+        loadProducts(data[0].slug)
+        setSelectedCategory(data[0].slug)
       }
     }
     setLoading(false)
   }
 
-  const loadProducts = async (categoryId: string) => {
+  const loadProducts = async (categorySlug: string) => {
     setLoading(true)
     const { data } = await supabase
       .from('products')
       .select('*')
-      .eq('category_id', categoryId)
+      .eq('category', categorySlug)
       .limit(20)
 
     if (data) {
@@ -120,9 +120,9 @@ export default function TelegramAppPage() {
     setLoading(false)
   }
 
-  const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId)
-    loadProducts(categoryId)
+  const handleCategoryChange = (categorySlug: string) => {
+    setSelectedCategory(categorySlug)
+    loadProducts(categorySlug)
   }
 
   const handleProductClick = (product: Product) => {
@@ -179,12 +179,12 @@ export default function TelegramAppPage() {
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => handleCategoryChange(cat.id)}
+              onClick={() => handleCategoryChange(cat.slug)}
               className="px-4 py-2 rounded-full whitespace-nowrap font-medium transition-all"
               style={{
-                backgroundColor: selectedCategory === cat.id ? buttonColor : 'transparent',
-                color: selectedCategory === cat.id ? (tg?.themeParams?.button_text_color || '#ffffff') : textColor,
-                border: selectedCategory === cat.id ? 'none' : `1px solid ${tg?.themeParams?.hint_color || '#e5e7eb'}`
+                backgroundColor: selectedCategory === cat.slug ? buttonColor : 'transparent',
+                color: selectedCategory === cat.slug ? (tg?.themeParams?.button_text_color || '#ffffff') : textColor,
+                border: selectedCategory === cat.slug ? 'none' : `1px solid ${tg?.themeParams?.hint_color || '#e5e7eb'}`
               }}
             >
               {cat.name}
