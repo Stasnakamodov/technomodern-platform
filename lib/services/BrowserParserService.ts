@@ -18,6 +18,7 @@ export class BrowserParserService {
 
     try {
       // Динамический импорт Puppeteer (только когда нужен)
+      // @ts-ignore - puppeteer is an optional dependency
       const puppeteer = await import('puppeteer')
 
       // Запускаем браузер с настройками для обхода защиты
@@ -220,6 +221,7 @@ export class BrowserParserService {
    */
   async isPuppeteerAvailable(): Promise<boolean> {
     try {
+      // @ts-ignore - puppeteer is an optional dependency
       await import('puppeteer')
       return true
     } catch {

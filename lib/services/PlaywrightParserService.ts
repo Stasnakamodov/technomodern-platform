@@ -21,8 +21,8 @@ export class PlaywrightParserService {
       const { chromium } = await import('playwright-extra')
       const StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default
 
-      // Подключаем stealth плагин
-      chromium.use(StealthPlugin())
+      // Подключаем stealth плагин (используем type assertion для совместимости)
+      chromium.use(StealthPlugin() as any)
       console.log('🥷 [Playwright Parser] Stealth плагин активирован')
 
       // Рандомизированные настройки для обхода детектирования
@@ -164,6 +164,7 @@ export class PlaywrightParserService {
       console.log('✅ [Playwright Parser] Страница загружена')
 
       // Получаем accessibility snapshot (как в Playwright MCP)
+      // @ts-ignore - accessibility is available in playwright
       const accessibilitySnapshot = await page.accessibility.snapshot()
       console.log('🌳 [Playwright Parser] Accessibility tree получен')
 
@@ -177,7 +178,13 @@ export class PlaywrightParserService {
       }
 
       return {
-        ...metadata,
+        title: metadata.title,
+        description: metadata.description || '',
+        price: metadata.price,
+        currency: metadata.currency,
+        imageUrl: metadata.imageUrl,
+        brand: metadata.brand,
+        category: metadata.category,
         marketplace: this.detectMarketplace(url),
         originalUrl: url
       }

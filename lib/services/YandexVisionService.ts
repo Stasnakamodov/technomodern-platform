@@ -357,7 +357,7 @@ export class YandexVisionService {
               let extractedText = '';
               
               // Обрабатываем каждый лист
-              workbook.SheetNames.forEach((sheetName, index) => {
+              workbook.SheetNames.forEach((sheetName: string, index: number) => {
                 console.log(`📋 Обрабатываем лист: ${sheetName}`);
                 const worksheet = workbook.Sheets[sheetName];
                 
@@ -402,7 +402,7 @@ export class YandexVisionService {
       let extractedText = '';
       
       // Обрабатываем каждый лист
-      workbook.SheetNames.forEach((sheetName, index) => {
+      workbook.SheetNames.forEach((sheetName: string, index: number) => {
         console.log(`📋 Обрабатываем лист: ${sheetName}`);
         const worksheet = workbook.Sheets[sheetName];
         

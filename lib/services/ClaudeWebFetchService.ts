@@ -15,6 +15,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk'
+import type { TextBlock } from '@anthropic-ai/sdk/resources'
 import type { ParsedProductMetadata } from './UrlParserService'
 
 export interface ClaudeProductAnalysis {
@@ -46,6 +47,13 @@ export class ClaudeWebFetchService {
   }
 
   /**
+   * Type guard для проверки что ContentBlock является TextBlock
+   */
+  private isTextBlock(block: Anthropic.ContentBlock): block is TextBlock {
+    return block.type === 'text'
+  }
+
+  /**
    * Проверка доступности Claude API
    */
   isAvailable(): boolean {
@@ -63,14 +71,18 @@ export class ClaudeWebFetchService {
     console.log('🤖 [Claude Web Fetch] Начинаем парсинг:', url)
 
     try {
+      // web_fetch_20250910 is a beta feature with custom type
       const response = await this.client.messages.create({
         model: 'claude-haiku-4-20250514',
         max_tokens: 2048,
         tools: [{
           type: 'web_fetch_20250910' as any,
           name: 'web_fetch',
-          max_uses: 3
-        }],
+          input_schema: {
+            type: 'object',
+            properties: {}
+          }
+        }] as any,
         messages: [{
           role: 'user',
           content: this.buildPrompt(url)
@@ -84,9 +96,9 @@ export class ClaudeWebFetchService {
       console.log('✅ [Claude Web Fetch] Ответ получен')
 
       // Извлекаем текстовый контент из ответа
-      const textContent = response.content.find((block: any) => block.type === 'text')
+      const textContent = response.content.find(this.isTextBlock.bind(this))
 
-      if (!textContent || !textContent.text) {
+      if (!textContent) {
         throw new Error('Claude не вернул текстовый ответ')
       }
 
@@ -107,8 +119,8 @@ export class ClaudeWebFetchService {
         description: analysis.description,
         price: analysis.price,
         currency: analysis.currency,
-        brand: analysis.brand,
-        category: analysis.category,
+        brand: analysis.brand || undefined,
+        category: analysis.category || undefined,
         marketplace: this.detectMarketplace(url),
         originalUrl: url
       }
@@ -161,9 +173,9 @@ export class ClaudeWebFetchService {
         }]
       })
 
-      const textContent = response.content.find((block: any) => block.type === 'text')
+      const textContent = response.content.find(this.isTextBlock.bind(this))
 
-      if (!textContent || !textContent.text) {
+      if (!textContent) {
         throw new Error('Claude не вернул текстовый ответ')
       }
 
@@ -174,8 +186,8 @@ export class ClaudeWebFetchService {
         description: analysis.description,
         price: analysis.price,
         currency: analysis.currency,
-        brand: analysis.brand,
-        category: analysis.category,
+        brand: analysis.brand || undefined,
+        category: analysis.category || undefined,
         marketplace: this.detectMarketplace(url),
         originalUrl: url
       }
