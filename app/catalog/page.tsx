@@ -218,17 +218,22 @@ export default function CatalogPageV2() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header - появляется после категорий */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40 header-animate">
-        <div className="header-container px-6 py-4 max-md:px-3 max-md:py-2">
-          <div className="flex items-center gap-4 mb-4 max-md:mb-2 max-md:gap-2">
+      {/* Верхняя часть header - НЕ sticky */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="px-6 py-4 max-md:px-3 max-md:py-2">
+          <div className="flex items-center gap-4 max-md:gap-2">
             <Link href="/" className="inline-flex items-center gap-2 max-md:gap-1 px-3 py-2 max-md:px-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors">
               <ArrowLeft className="h-4 w-4 max-md:h-3 max-md:w-3" />
               <span className="max-md:text-xs">На главную</span>
             </Link>
             <h1 className="text-2xl font-bold text-gray-900 max-md:text-lg">Каталог товаров</h1>
           </div>
+        </div>
+      </div>
 
+      {/* Поисковая строка - STICKY с полупрозрачным фоном */}
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-40">
+        <div className="px-6 py-2 max-md:px-3 max-md:py-2">
           <div className="flex items-center gap-4 max-md:gap-2">
             {/* Кнопка категорий (мобильная) */}
             <Button
@@ -241,8 +246,8 @@ export default function CatalogPageV2() {
               <span className="max-md:hidden">Категории</span>
             </Button>
 
-            {/* Новый компонент поиска с расширенным функционалом */}
-            <div className="search-container-animate max-md:flex-1">
+            {/* Поиск */}
+            <div className="flex-1">
               <CatalogHeader
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
