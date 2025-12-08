@@ -1,0 +1,65 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            # Остановить PM2 чтобы освободить память
+            pm2 delete technomodern 2>/dev/null || true
+            pm2 save --force
+
+            cd /var/www/technomodern-platform
+
+            # Получить последний код
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Удалить старые node_modules и кэш
+            rm -rf node_modules .next package-lock.json
+
+            # Установить зависимости с лимитом памяти
+            NODE_OPTIONS="--max-old-space-size=512" npm install --legacy-peer-deps
+
+            # Собрать проект с лимитом памяти
+            NODE_OPTIONS="--max-old-space-size=1024" npm run build
+
+            # Создать ecosystem файл для PM2 с лимитом памяти
+            cat > ecosystem.config.js << 'EOF'
+            module.exports = {
+              apps: [{
+                name: 'technomodern',
+                script: 'npm',
+                args: 'start',
+                cwd: '/var/www/technomodern-platform',
+                max_memory_restart: '500M',
+                node_args: '--max-old-space-size=512',
+                env: {
+                  NODE_ENV: 'production',
+                  PORT: 3000
+                },
+                restart_delay: 5000,
+                max_restarts: 10
+              }]
+            }
+            EOF
+
+            # Запустить через ecosystem
+            pm2 start ecosystem.config.js
+            pm2 save
+
+            # Перезапустить nginx
+            systemctl reload nginx
+
+            echo "Deploy completed!"
