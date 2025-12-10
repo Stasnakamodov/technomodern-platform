@@ -1,5 +1,30 @@
-// Типы для каталога ТехноМодерн
+// ============================================
+// ТИПЫ ДЛЯ КАТАЛОГА ТЕХНОМОДЕРН
+// Единственный источник истины для типов
+// ============================================
 
+// ============================================
+// ПРОДУКТЫ
+// ============================================
+
+// Тип продукта из API (snake_case - как в БД)
+export interface ProductFromAPI {
+  id: string
+  name: string
+  description: string
+  price: number
+  images: string[]
+  sku: string | null
+  category_id: string
+  category_name: string
+  supplier_id: string
+  supplier_name: string
+  in_stock: boolean
+  min_order: number
+  created_at: string
+}
+
+// Тип продукта для UI компонентов (camelCase)
 export interface Product {
   id: string
   name: string
@@ -8,12 +33,100 @@ export interface Product {
   images: string[]
   specifications?: Record<string, string>
   category: string
-  category_id?: string // UUID категории из БД
+  category_id?: string
   inStock: boolean
   minOrder: number
   sku?: string
   supplier_name?: string
 }
+
+// Функция конвертации API -> UI
+export function apiProductToUI(product: ProductFromAPI): Product {
+  return {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    description: product.description,
+    images: product.images,
+    category: product.category_name,
+    category_id: product.category_id,
+    inStock: product.in_stock,
+    minOrder: product.min_order,
+    sku: product.sku || undefined,
+    supplier_name: product.supplier_name
+  }
+}
+
+// Ответ API для списка продуктов
+export interface ProductsAPIResponse {
+  products: ProductFromAPI[]
+  total: number
+  page: number
+  limit: number
+  hasMore: boolean
+}
+
+// ============================================
+// КАТЕГОРИИ
+// ============================================
+
+// Тип категории из API
+export interface CategoryFromAPI {
+  id: string
+  name: string
+  slug: string
+  icon: string | null
+  parent_id: string | null
+  level: number
+  product_count: number
+  subcategories_count?: number
+}
+
+// Алиас для совместимости (категория одинаковая в API и UI)
+export type Category = CategoryFromAPI
+
+// ============================================
+// ФИЛЬТРЫ И СОРТИРОВКА
+// ============================================
+
+export type SortBy = 'price' | 'name' | 'created_at'
+export type SortOrder = 'asc' | 'desc'
+
+export interface ProductFilters {
+  categoryId?: string
+  search?: string
+  page?: number
+  limit?: number
+  sortBy?: SortBy
+  sortOrder?: SortOrder
+}
+
+// ============================================
+// КОРЗИНА
+// ============================================
+
+export interface CartItem {
+  id: string
+  name: string
+  supplier_name: string
+  price: number
+  quantity: number
+  total_price: number
+  currency: string
+  image_url?: string
+  sku?: string
+}
+
+export interface Cart {
+  items: CartItem[]
+  supplier?: Supplier
+  total_amount: number
+  currency: string
+}
+
+// ============================================
+// ПОСТАВЩИКИ
+// ============================================
 
 export interface Supplier {
   id: string
@@ -58,36 +171,10 @@ export interface Supplier {
   updated_at?: string
 }
 
-export interface CartItem {
-  id: string
-  name: string
-  supplier_name: string
-  price: number
-  quantity: number
-  total_price: number
-  currency: string
-  image_url?: string
-  sku?: string
-}
+// ============================================
+// КОРЗИНА В БД (будущая интеграция)
+// ============================================
 
-export interface Cart {
-  items: CartItem[]
-  supplier?: Supplier
-  total_amount: number
-  currency: string
-}
-
-export interface Category {
-  id: string
-  name: string
-  slug: string
-  description?: string
-  icon?: string
-  subcategories?: Category[]
-  products_count?: number
-}
-
-// Типы для корзины в БД (будущая интеграция)
 export interface ProjectCart {
   id: string
   user_id: string
@@ -103,4 +190,17 @@ export interface ProjectCart {
   updated_at: string
   converted_to_project_id?: string
   expires_at: string
+}
+
+// ============================================
+// PROPS ДЛЯ КОМПОНЕНТОВ
+// ============================================
+
+export interface CatalogClientProps {
+  initialProducts: ProductFromAPI[]
+  initialCategories: CategoryFromAPI[]
+  initialTotal: number
+  initialHasMore: boolean
+  initialSortBy?: SortBy
+  initialSortOrder?: SortOrder
 }
