@@ -1,17 +1,15 @@
 'use client'
 
-import React from 'react'
+import { useState } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Eye,
   MessageCircle,
   ShoppingCart,
-  Package,
-  DollarSign,
   Building2,
-  Image as ImageIcon
+  ImageIcon
 } from "lucide-react"
 import type { Product } from '@/types/catalog.types'
 
@@ -22,19 +20,8 @@ interface ProductCardProps {
   onContactSupplier?: (productId: string) => void
 }
 
-// Категории товаров для ТехноМодерн
-const CATEGORIES = {
-  "Электроника": { name: "Электроника", icon: "💻", color: "bg-blue-50 text-blue-700 border-blue-200" },
-  "Мебель": { name: "Мебель", icon: "🪑", color: "bg-amber-50 text-amber-700 border-amber-200" },
-  "Одежда": { name: "Одежда", icon: "👕", color: "bg-purple-50 text-purple-700 border-purple-200" },
-  "Строительство": { name: "Строительство", icon: "🏗️", color: "bg-orange-50 text-orange-700 border-orange-200" },
-  "Красота и здоровье": { name: "Красота и здоровье", icon: "💄", color: "bg-pink-50 text-pink-700 border-pink-200" },
-  "Спорт и отдых": { name: "Спорт и отдых", icon: "⚽", color: "bg-green-50 text-green-700 border-green-200" },
-  "Дом и сад": { name: "Дом и сад", icon: "🏡", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  "Текстиль": { name: "Текстиль", icon: "🧵", color: "bg-violet-50 text-violet-700 border-violet-200" },
-  "Оборудование": { name: "Оборудование", icon: "⚙️", color: "bg-gray-50 text-gray-700 border-gray-200" },
-  "Автотовары": { name: "Автотовары", icon: "🚗", color: "bg-red-50 text-red-700 border-red-200" }
-}
+// Placeholder для изображений (1x1 серый пиксель в base64)
+const BLUR_DATA_URL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBEQCEEBEAAB+AQAB//9k='
 
 export default function ProductCard({
   product,
@@ -42,38 +29,60 @@ export default function ProductCard({
   onViewDetails,
   onContactSupplier
 }: ProductCardProps) {
+  const [imageError, setImageError] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
+
   // Безопасность: проверка данных товара
   if (!product || !product.id || !product.name) {
-    console.error('❌ ProductCard: Некорректные данные товара', product)
+    console.error('ProductCard: Некорректные данные товара', product)
     return null
   }
 
-  const category = CATEGORIES[product.category as keyof typeof CATEGORIES] || CATEGORIES["Электроника"]
+  const hasValidImage = product.images && product.images.length > 0 && !imageError
+  const imageUrl = hasValidImage ? product.images[0] : null
+
+  // Определяем домен для внешних изображений
+  const isExternalImage = imageUrl && (
+    imageUrl.startsWith('http://') ||
+    imageUrl.startsWith('https://')
+  )
 
   return (
     <div
-      className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer"
+      className="hover:-translate-y-1 transition-transform duration-200 cursor-pointer h-full"
       onClick={() => onViewDetails?.(product)}
     >
-      <Card className="shadow-md hover:shadow-xl transition-shadow duration-300 border-gray-200 hover:border-gray-300 bg-white overflow-hidden flex flex-col min-h-[360px] sm:min-h-[400px] md:min-h-[440px] lg:min-h-[480px]">
+      <Card className="shadow-md hover:shadow-xl transition-shadow duration-300 border-gray-200 hover:border-gray-300 bg-white overflow-hidden flex flex-col h-full min-h-[360px] sm:min-h-[400px] md:min-h-[440px] lg:min-h-[480px]">
         {/* Изображение товара */}
         <div className="relative w-full h-44 sm:h-52 md:h-56 lg:h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-          {(product.images && product.images.length > 0) ? (
-            <img
-              src={product.images[0]}
-              alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
-                if (fallback) fallback.classList.remove('hidden');
-              }}
-            />
-          ) : null}
-          <div className={`flex items-center justify-center h-full fallback-icon ${(product.images && product.images.length > 0) ? 'hidden' : ''}`}>
-            <ImageIcon className="h-16 w-16 text-gray-300" />
-          </div>
-
+          {imageUrl ? (
+            <>
+              {/* Next.js Image с оптимизацией */}
+              <Image
+                src={imageUrl}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                className={`object-cover transition-all duration-300 ${
+                  imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+                }`}
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageError(true)}
+                loading="lazy"
+                unoptimized={isExternalImage ? true : false}
+              />
+              {/* Скелетон пока изображение загружается */}
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+              )}
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <ImageIcon className="h-16 w-16 text-gray-300" />
+            </div>
+          )}
         </div>
 
         <CardHeader className="pb-3">
@@ -86,7 +95,7 @@ export default function ProductCard({
             {/* Поставщик */}
             {product.supplier_name && (
               <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <Building2 className="h-4 w-4" />
+                <Building2 className="h-4 w-4 flex-shrink-0" />
                 <span className="line-clamp-1">{product.supplier_name}</span>
               </div>
             )}

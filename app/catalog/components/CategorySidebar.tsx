@@ -1,10 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Package, ChevronDown, ChevronRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import type { Product } from '@/types/catalog.types'
-import { supabase } from '@/lib/supabase'
 
 interface Category {
   id: string
@@ -16,53 +14,31 @@ interface Category {
   product_count: number
 }
 
-interface CategoryBrowserProps {
-  products: Product[]
-  onCategorySelect: (category: string, subcategory?: string) => void
-  selectedCategory?: string
-  selectedSubcategory?: string
+interface CategorySidebarProps {
+  categories: Category[]
+  selectedCategoryId: string
+  onCategorySelect: (categoryId: string) => void
 }
 
-export default function CategoryBrowser({
-  products,
-  onCategorySelect,
-  selectedCategory
-}: CategoryBrowserProps) {
-  const [categories, setCategories] = useState<Category[]>([])
+const categoryIcons: Record<string, string> = {
+  'Электроника': '💻',
+  'Дом и быт': '🏠',
+  'Строительство': '🏗️',
+  'Автотовары': '🚗',
+  'Здоровье и красота': '💄',
+  'Здоровье и медицина': '💊',
+  'Промышленность': '🏭'
+}
+
+export default function CategorySidebar({
+  categories,
+  selectedCategoryId,
+  onCategorySelect
+}: CategorySidebarProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [loading, setLoading] = useState(true)
 
-  // Иконки для корневых категорий
-  const categoryIcons: Record<string, string> = {
-    'Электроника': '💻',
-    'Дом и быт': '🏠',
-    'Строительство': '🏗️',
-    'Автотовары': '🚗',
-    'Здоровье и красота': '💄',
-    'Здоровье и медицина': '💊',
-    'Промышленность': '🏭'
-  }
-
-  // Загружаем категории из Supabase
-  useEffect(() => {
-    async function loadCategories() {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name, slug, icon, parent_id, level, product_count')
-        .order('name')
-
-      if (error) {
-        console.error('Ошибка загрузки категорий:', error)
-      } else {
-        setCategories(data || [])
-      }
-      setLoading(false)
-    }
-    loadCategories()
-  }, [])
-
-  // Корневые категории (parent_id = null)
-  const rootCategories = React.useMemo(() => {
+  // Root категории
+  const rootCategories = useMemo(() => {
     return categories.filter(c => c.parent_id === null)
   }, [categories])
 
@@ -71,13 +47,20 @@ export default function CategoryBrowser({
     return categories.filter(c => c.parent_id === parentId)
   }
 
-  // Считаем товары для корневой категории (сумма по подкатегориям)
+  // Считаем товары для root категории (сумма подкатегорий)
   const getRootCategoryProductCount = (rootId: string) => {
     const subcats = getSubcategories(rootId)
     return subcats.reduce((sum, sub) => sum + (sub.product_count || 0), 0)
   }
 
-  // Переключение раскрытия категории
+  // Проверка - выбрана ли эта категория или её подкатегория
+  const isCategoryOrChildSelected = (categoryId: string) => {
+    if (categoryId === selectedCategoryId) return true
+    const subcats = getSubcategories(categoryId)
+    return subcats.some(s => s.id === selectedCategoryId)
+  }
+
+  // Переключение раскрытия
   const toggleExpanded = (categoryId: string) => {
     setExpandedCategories(prev => {
       const next = new Set(prev)
@@ -90,26 +73,24 @@ export default function CategoryBrowser({
     })
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-2">
-        <div className="animate-pulse">
-          <div className="h-12 bg-gray-200 rounded mb-2"></div>
-          <div className="h-10 bg-gray-100 rounded mb-2"></div>
-          <div className="h-10 bg-gray-100 rounded mb-2"></div>
-        </div>
-      </div>
-    )
-  }
+  // Автоматически раскрываем категорию если выбрана её подкатегория
+  React.useEffect(() => {
+    if (selectedCategoryId) {
+      const selectedCat = categories.find(c => c.id === selectedCategoryId)
+      if (selectedCat?.parent_id) {
+        setExpandedCategories(prev => new Set([...prev, selectedCat.parent_id!]))
+      }
+    }
+  }, [selectedCategoryId, categories])
 
   return (
     <div className="space-y-1">
-      {/* Кнопка "Все товары" */}
+      {/* Все товары */}
       <div className="category-item">
         <Button
-          variant={!selectedCategory ? "default" : "ghost"}
+          variant={!selectedCategoryId ? "default" : "ghost"}
           className={`w-full justify-start h-12 max-md:h-10 ${
-            !selectedCategory
+            !selectedCategoryId
               ? "bg-gray-900 text-white hover:bg-gray-800"
               : "hover:bg-gray-100"
           }`}
@@ -120,30 +101,29 @@ export default function CategoryBrowser({
         </Button>
       </div>
 
-      {/* Иерархический список категорий */}
+      {/* Категории */}
       {rootCategories.map(rootCategory => {
         const subcategories = getSubcategories(rootCategory.id)
         const hasSubcategories = subcategories.length > 0
         const isExpanded = expandedCategories.has(rootCategory.id)
         const totalProducts = getRootCategoryProductCount(rootCategory.id)
         const icon = rootCategory.icon || categoryIcons[rootCategory.name] || '📦'
+        const isSelected = isCategoryOrChildSelected(rootCategory.id)
 
-        // Пропускаем пустые корневые категории
+        // Пропускаем пустые категории
         if (totalProducts === 0) return null
 
         return (
           <div key={rootCategory.id} className="category-item">
-            {/* Корневая категория */}
+            {/* Root категория */}
             <div className="flex items-center">
               <Button
                 variant="ghost"
                 className={`flex-1 justify-start h-12 max-md:h-10 hover:bg-gray-100 ${
-                  selectedCategory === rootCategory.name ? "bg-gray-100 font-semibold" : ""
+                  selectedCategoryId === rootCategory.id ? "bg-gray-100 font-semibold" : ""
                 }`}
                 onClick={() => {
-                  // Всегда выбираем категорию при клике
-                  onCategorySelect(rootCategory.name)
-                  // Если есть подкатегории - раскрываем/закрываем
+                  onCategorySelect(rootCategory.id)
                   if (hasSubcategories) {
                     toggleExpanded(rootCategory.id)
                   }
@@ -158,13 +138,13 @@ export default function CategoryBrowser({
               </Button>
             </div>
 
-            {/* Подкатегории (если раскрыты) */}
+            {/* Подкатегории */}
             {hasSubcategories && isExpanded && (
               <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-2">
                 {subcategories
                   .filter(sub => sub.product_count > 0)
                   .map(subcategory => {
-                    const isSubSelected = selectedCategory === subcategory.name
+                    const isSubSelected = selectedCategoryId === subcategory.id
                     return (
                       <Button
                         key={subcategory.id}
@@ -172,7 +152,7 @@ export default function CategoryBrowser({
                         className={`w-full justify-start h-10 max-md:h-9 text-sm max-md:text-xs ${
                           isSubSelected ? "bg-gray-100 font-semibold" : "hover:bg-gray-50"
                         }`}
-                        onClick={() => onCategorySelect(subcategory.name)}
+                        onClick={() => onCategorySelect(subcategory.id)}
                       >
                         <span className="flex-1 text-left">{subcategory.name}</span>
                         <span className="text-xs text-gray-400">{subcategory.product_count}</span>
