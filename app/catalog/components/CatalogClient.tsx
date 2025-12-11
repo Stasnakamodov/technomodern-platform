@@ -544,8 +544,8 @@ export default function CatalogClient({
               </div>
             ) : (
               <>
-                {/* Виртуализация для больших списков (>50 товаров) */}
-                {products.length > 50 ? (
+                {/* Виртуализация для больших списков (>100 товаров) */}
+                {products.length > 100 ? (
                   <VirtualizedProductGrid
                     products={products.map(apiProductToUI)}
                     onAddToCart={(product) => {
