@@ -1,0 +1,313 @@
+{
+  "batch": "0-719",
+  "checked": 720,
+  "delete_ids": [
+    "000264c1-52d3-4e97-9421-692901ac968b",
+    "004f5899-f05f-45ab-82d7-a787f97ad815",
+    "00cb20d8-1fa5-4b36-bc69-be3636ed4e47",
+    "00cb6c90-02e1-4e61-a8bb-84b253d9fee0",
+    "0116dfe7-ef40-4363-8a71-4919fb6eceff",
+    "0141f203-d704-4b4c-80c7-a6a0d190093e",
+    "01f186a5-3bd9-4ff3-9fe7-6e1a59fbe82f",
+    "01ffbab4-a199-4809-9192-414e43ce4d02",
+    "0210dba7-6b2a-4261-8791-2b60b3b75b59",
+    "022d551b-cece-47ce-80da-308027a318c4",
+    "025f0e3f-d3f2-4084-a086-f88c535cb19c",
+    "0266d98a-7302-4a40-ac9f-f939b9c7d799",
+    "0490cf10-da10-4ca7-82fc-125dd9959ad5",
+    "04931351-6d76-477e-9792-c5b07f2f69dd",
+    "04cf570f-2610-45df-929b-82212ad54265",
+    "052596b9-16a4-4582-977b-8abd29497a1e",
+    "056e45de-a8a9-4196-aff3-4f31d88dd0b1",
+    "06300c32-a1e9-4e0f-9dfe-751b69665825",
+    "0698bd46-9796-4321-af48-79f77ebae6fa",
+    "074fb61c-e74f-4ed1-bef0-b19c2c2b4796",
+    "07ab6b97-ad65-4b33-aacc-93c82e9e44b1",
+    "07f6556b-8fd5-49f2-b3f0-9b5371657f3e",
+    "098e4f2c-ab2a-4289-bcab-91d32b252fa0",
+    "09c60ce3-d54c-43b8-b172-7e932f74411f",
+    "09f84f10-7af0-4612-9315-19c677fe6668",
+    "0a137517-a7cf-4c33-bbda-30eb240311d5",
+    "0b2bfb85-0a55-49d0-9d5d-f3df4b9e7098",
+    "0b75d8d7-0ba5-41a0-a415-638bc6f65473",
+    "0bbbf0fd-3081-439c-be01-6a78a1f28b9f",
+    "0beef48e-f107-4145-af27-fd1d3962e6ce",
+    "0c42f657-ed4b-4b02-b7d8-b90ae1f23f20",
+    "0d6071ed-8ddd-4bfb-b1af-30d8c89a3c12",
+    "0e680e77-8dda-4a62-bd8e-af45bbb31bc6",
+    "0e6ca958-fe26-4c01-8d35-ca27b567c832",
+    "0ea5e2a3-028d-424b-9589-5afa165fef2e",
+    "0f04f0e1-119e-476f-aa28-84b06eb6f45d",
+    "0f36fcf1-0c2c-435d-a34e-bb07364efda2",
+    "1069d06d-32aa-4afa-b457-1161add4929f",
+    "10770a5f-686b-4098-bc89-02aba49e64ff",
+    "12990fa2-f0a8-42e1-b4db-a96b8ffc7034",
+    "12aac4b7-2161-4280-9d04-4b4231089d13",
+    "12d4cef5-1dd8-4b70-a918-a6c34609ad82",
+    "131c8a87-4ac0-47dc-a8db-1204aff10435",
+    "13433792-0489-4802-9c15-a917afff3285",
+    "13799177-5d7c-465d-8712-68ecda2f31e4",
+    "13a2f873-4f2f-4ceb-a2f5-757bbe65de51",
+    "14046015-1888-469d-9e7d-be39b0fd92c4",
+    "1435991e-0c0d-470c-81c3-79461bbdc0ec",
+    "14947da7-d398-4e83-bf87-900d6b890441",
+    "15fad3a4-ba14-42ac-bdc7-87f54f9b0ff7",
+    "1759deb4-6aef-47dc-98d7-a097bf6083ee",
+    "175c42ca-e05c-44ff-90b5-99049bd53014",
+    "18a1e3c0-f7a7-4a53-a933-8035103b85dc",
+    "18c94986-efc5-456c-872b-e46581e3e693",
+    "19a10a17-a35f-46b5-a370-7caf585beaf9",
+    "1a02c2b4-e11e-406c-8dcc-e17667fbf296",
+    "1cbf41e9-d402-4d75-8392-07a4c89e4641",
+    "1d2fccfc-442c-4d23-8566-2e56a7c36f81",
+    "1e012f13-fc19-4655-90cf-89c870f56041",
+    "1e18cf7a-aa05-4520-8ae1-60198d580f4a",
+    "1f34be9a-aee2-46fd-874c-09c6d7869a1d",
+    "1f3e6dfb-0aca-4d1b-bda3-72841c71f330",
+    "1f5a42ca-cc96-4a46-87c8-4ddf3f9a1fd7",
+    "1f822664-64dc-4424-8cb8-8babd32b9a48",
+    "1fd9b5ae-66ae-4f0f-af8a-56eb657805c2",
+    "216ab210-eba3-4f6c-b436-32850d21fc87",
+    "21f3beb3-4116-45d5-bedf-21ad5154f3cb",
+    "2331006a-cbdd-4a73-ba35-324e5514f9cb",
+    "241ab163-6e04-40fe-8b54-204ece713a7b",
+    "24d4992e-ed34-4546-b44f-081022aa036b",
+    "25bef89b-0a58-4a67-a6a7-504752e9b0cd",
+    "2654697d-9817-4422-98ab-cd264902f34c",
+    "280d03ad-8b9e-4f71-b527-263d7225879c",
+    "2958f2e3-c58c-41f1-beba-29120c65c531",
+    "2961865a-8082-41b8-a434-844143e0290b",
+    "299519e9-2707-499d-aa57-7e33831707e4",
+    "29fc45c7-5533-4031-b3a9-7c479da92a50",
+    "2a8880f9-3ba6-47a1-b142-b84c7767b898",
+    "2aa61cd0-fb2f-4f60-9d6c-c8ab993a137d",
+    "2b1295ce-4145-48bb-8407-72a63f08ebc9",
+    "2b6cff04-1595-4b10-a9ca-30b29c410642",
+    "2bc2b998-009b-4995-8050-2b642490525a",
+    "2c7df2da-91f3-4fae-8aa9-2dd36925cf13",
+    "2d063e9f-8dba-460e-aeba-c531b6e62a4e",
+    "2d0fad69-14cd-43f6-8884-7e759d51e3a8",
+    "2d2c68b1-6f6a-408e-aeb7-530d21a22f59",
+    "2d5376d7-d405-4f28-a78a-83585531b6a6",
+    "2d80eeea-e28d-492d-ad4d-8ee0887eb267",
+    "2dc61279-f8e0-4077-9677-1c155fd64923",
+    "2e9f6589-04d2-464e-91e1-2ccad4d25920",
+    "2ecd08a8-7c99-48c5-bee2-98c24fbc0978",
+    "2f501e56-c50a-4a7e-bb58-96443a366ff9"
+  ],
+  "delete_count": 92,
+  "keep_count": 628,
+  "avg_score": 75.2,
+  "worst_examples": [
+    {
+      "id": "000264c1-52d3-4e97-9421-692901ac968b",
+      "name": "Чрезвычайно густая шкаф для палочек из нержавеющей стали.",
+      "price": 73,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "004f5899-f05f-45ab-82d7-a787f97ad815",
+      "name": "Грузовая буровая биты",
+      "price": 165.1,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "00cb20d8-1fa5-4b36-bc69-be3636ed4e47",
+      "name": "Чанхэ Фурида Средние ворота Коу Фрауда Средние ворота Первые ворота Рука Коу посередине двери открыл",
+      "price": 188,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "00cb6c90-02e1-4e61-a8bb-84b253d9fee0",
+      "name": "Япония Синва Свобода (Пингвин) 73773 Государственный британский болт Стеллер",
+      "price": 438,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "0116dfe7-ef40-4363-8a71-4919fb6eceff",
+      "name": "Подушки для спальной гипоаллергенной",
+      "price": 1098.5,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "0141f203-d704-4b4c-80c7-a6a0d190093e",
+      "name": "Простая гардеробная сборка спальни пластиковая одиночная аренда детей Дети, висящие шкафы для хранен",
+      "price": 3475,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "01f186a5-3bd9-4ff3-9fe7-6e1a59fbe82f",
+      "name": "Шина Zhengxin 165 175 185 195 205 215 /50 55 65 70R15R16R17",
+      "price": 2938,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "01ffbab4-a199-4809-9192-414e43ce4d02",
+      "name": "1шт кабель Bite Careon Mite Protector Wire WR",
+      "price": 275.6,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "0210dba7-6b2a-4261-8791-2b60b3b75b59",
+      "name": "Анализ нефтяного продукта",
+      "price": 570,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "022d551b-cece-47ce-80da-308027a318c4",
+      "name": "[Deli универсальный T bar Socket Spanner 17mm Wrench Nut]",
+      "price": 2887.3,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "025f0e3f-d3f2-4084-a086-f88c535cb19c",
+      "name": "Jiatong Tire 215/55R18 95H 520V1 Оригинал с юго-восточным DX3 Chery Tiggo 5x Kaiyi 21555R18",
+      "price": 4475,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "0266d98a-7302-4a40-ac9f-f939b9c7d799",
+      "name": "Умная розетка eWeLink WiFi/Bluetooth",
+      "price": 634,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "04931351-6d76-477e-9792-c5b07f2f69dd",
+      "name": "X2 HD 1080p Commance камера Live веб-камера Network USB F",
+      "price": 275.6,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "04cf570f-2610-45df-929b-82212ad54265",
+      "name": "10шт/установка HSS H7 Machine Reame Straight Shank Milling",
+      "price": 3632.2,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "056e45de-a8a9-4196-aff3-4f31d88dd0b1",
+      "name": "[YYT Plastic case. Electronic component junction box. мощ",
+      "price": 293.8,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "06300c32-a1e9-4e0f-9dfe-751b69665825",
+      "name": "3 штуки паяла присоски, десять насоса, паяль Железный Дезоль",
+      "price": 3299.4,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "0698bd46-9796-4321-af48-79f77ebae6fa",
+      "name": "Цина Jiatong 175/70R13 Jetta Golf",
+      "price": 3213,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "07ab6b97-ad65-4b33-aacc-93c82e9e44b1",
+      "name": "Advanced Champoo и кондиционера Arvazallia",
+      "price": 8252.4,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "07f6556b-8fd5-49f2-b3f0-9b5371657f3e",
+      "name": "S Склад Гидравлический Розовый Пресс Тепловой 4 Тонн D",
+      "price": 73105.5,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "098e4f2c-ab2a-4289-bcab-91d32b252fa0",
+      "name": "[Vintage T9 электрический Hair Cutting Machine Clipper Pr",
+      "price": 243.1,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "09c60ce3-d54c-43b8-b172-7e932f74411f",
+      "name": "[16PC Forstner Drill Bits набор 6mm-50mm Wood 40CR S]",
+      "price": 9889.1,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "09f84f10-7af0-4612-9315-19c677fe6668",
+      "name": "[EU/US/UK мощность Strip 2 USB 4 Outlets Socket Plug Exte",
+      "price": 3383.9,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "0a137517-a7cf-4c33-bbda-30eb240311d5",
+      "name": "[10шт Carbide Drill Bit 1-3mm Micro Bits набор PCB CNC H]",
+      "price": 915.2,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "0b75d8d7-0ba5-41a0-a415-638bc6f65473",
+      "name": "Blu Advance 5.5 HD-Oulocked Dual SIM-смартфон-US GSM",
+      "price": 20302.1,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "0bbbf0fd-3081-439c-be01-6a78a1f28b9f",
+      "name": "Dunlop Tire 215/60R16 95V Veuro D8H Оригинал с Toyota Camry Ruizhi",
+      "price": 11488,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "0e6ca958-fe26-4c01-8d35-ca27b567c832",
+      "name": "USB 2.0 Docking Station в DVI VGA Network Hub Converter",
+      "price": 6223.1,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "0ea5e2a3-028d-424b-9589-5afa165fef2e",
+      "name": "Домашняя вставка двери и окна вспомогательная ручная держатель шкаф дверь ручной дверь Маленькая руч",
+      "price": 44,
+      "score": 0,
+      "reason": "Бессмыслица"
+    },
+    {
+      "id": "0f04f0e1-119e-476f-aa28-84b06eb6f45d",
+      "name": "VXE Dragonfly R1 Bluetooth мышь игровой Rechargeable",
+      "price": 4876.3,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "1069d06d-32aa-4afa-b457-1161add4929f",
+      "name": "[6шт Carbide Tipped TCT Drill Bit набор Stainless Steel с",
+      "price": 3959.8,
+      "score": 0,
+      "reason": "На английском"
+    },
+    {
+      "id": "10770a5f-686b-4098-bc89-02aba49e64ff",
+      "name": "Bannage First Aid набор Mahze Roll Rant Scharing Nurs",
+      "price": 249.6,
+      "score": 0,
+      "reason": "На английском"
+    }
+  ]
+}

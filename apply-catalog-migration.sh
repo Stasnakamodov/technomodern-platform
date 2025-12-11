@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Применение миграции 006_catalog_refactor.sql
+# Требует SUPABASE_DB_URL или выполнение через Supabase Dashboard
+
+echo "=== Применение миграции каталога ==="
+echo ""
+echo "ВАЖНО: Эта миграция добавляет:"
+echo "  1. Колонку deleted_at для soft delete"
+echo "  2. Триггеры для автоматического обновления счётчиков категорий"
+echo "  3. Полнотекстовый поиск"
+echo "  4. RPC функции для поиска товаров"
+echo ""
+echo "Способы применения:"
+echo ""
+echo "1. Через Supabase Dashboard:"
+echo "   - Открой https://supabase.com/dashboard"
+echo "   - Выбери проект rbngpxwamfkunktxjtqh"
+echo "   - SQL Editor → New Query"
+echo "   - Вставь содержимое файла: supabase/migrations/006_catalog_refactor.sql"
+echo "   - Выполни"
+echo ""
+echo "2. Через Supabase CLI (если установлен):"
+echo "   supabase db push"
+echo ""
+echo "3. Через psql (если есть прямой доступ):"
+echo "   psql \$SUPABASE_DB_URL -f supabase/migrations/006_catalog_refactor.sql"
+echo ""
+echo "После применения миграции:"
+echo "  - Счётчики категорий будут автоматически обновляться"
+echo "  - Удаление товаров будет soft delete (deleted_at)"
+echo "  - Поиск будет работать через полнотекстовый индекс"
+echo ""

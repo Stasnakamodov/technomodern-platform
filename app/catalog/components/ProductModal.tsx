@@ -68,9 +68,9 @@ export default function ProductModal({
       />
 
       {/* Modal - центрированный с max-width */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 lg:p-10">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 lg:p-6">
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close button - абсолютно позиционированный */}
@@ -151,7 +151,7 @@ export default function ProductModal({
               </div>
 
               {/* Right: Product Info */}
-              <div className="p-6 lg:p-8 flex flex-col">
+              <div className="p-6 lg:p-10 flex flex-col">
                 {/* Category & Stock */}
                 <div className="flex items-center gap-2 mb-3">
                   <Badge variant="outline" className="text-xs font-normal">
@@ -166,15 +166,15 @@ export default function ProductModal({
                 </div>
 
                 {/* Title */}
-                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-4 leading-tight">
+                <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
                   {product.name}
                 </h2>
 
                 {/* Price Block */}
-                <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <div className="bg-gray-50 rounded-xl p-5 mb-5">
                   <p className="text-sm text-gray-500 mb-1">Цена</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gray-900">
-                    {product.price.toLocaleString('ru-RU')} <span className="text-xl">₽</span>
+                  <p className="text-4xl lg:text-5xl font-bold text-gray-900">
+                    {product.price.toLocaleString('ru-RU')} <span className="text-2xl">₽</span>
                   </p>
                   <div className="flex items-center gap-1 mt-2 text-sm text-gray-600">
                     <Package className="h-4 w-4" />

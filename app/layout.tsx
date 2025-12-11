@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from "sonner"
 import { DeviceProvider } from "@/context/DeviceContext"
 import "./globals.css"
 
@@ -52,6 +53,7 @@ export default function RootLayout({
           {children}
         </DeviceProvider>
         <Toaster />
+        <SonnerToaster position="bottom-right" richColors />
         <Analytics />
       </body>
     </html>

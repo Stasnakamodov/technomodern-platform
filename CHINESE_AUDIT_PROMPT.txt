@@ -1,0 +1,214 @@
+## Задача: Аудит и очистка китайского текста в описаниях товаров
+
+### Контекст
+Предыдущий агент начал очистку китайских иероглифов из описаний товаров.
+Было найдено 2727 товаров с китайским текстом в описаниях.
+Очищено: 2000 товаров (работы 1-20)
+Осталось: 727 товаров (2001-2727)
+
+### Что нужно сделать:
+
+1. **Завершить очистку описаний** (727 товаров)
+2. **Перепроверить** что китайского текста больше нет
+3. **Проверить названия** на наличие стрёмных переводов
+
+### Supabase credentials:
+```
+URL: https://rbngpxwamfkunktxjtqh.supabase.co
+API Key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJibmdweHdhbWZrdW5rdHhqdHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1OTk5NDcsImV4cCI6MjA2NDE3NTk0N30.cpW1S5MK7eOfYSZx9gHP_AP-wH5BRIigUFwlBYNA2MI
+```
+
+### ШАГ 1: Найти все товары с китайским текстом
+
+```bash
+SUPABASE_URL="https://rbngpxwamfkunktxjtqh.supabase.co"
+SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJibmdweHdhbWZrdW5rdHhqdHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1OTk5NDcsImV4cCI6MjA2NDE3NTk0N30.cpW1S5MK7eOfYSZx9gHP_AP-wH5BRIigUFwlBYNA2MI"
+
+# Получить все товары
+for i in 0 1000 2000 3000; do
+  curl -s "$SUPABASE_URL/rest/v1/products?select=id,name,description&offset=$i&limit=1000" \
+    -H "apikey: $SUPABASE_KEY" \
+    -H "Authorization: Bearer $SUPABASE_KEY" > /tmp/products_$i.json
+done
+```
+
+```python
+import json
+import re
+
+# Объединить все товары
+all_products = []
+for i in [0, 1000, 2000, 3000]:
+    try:
+        with open(f'/tmp/products_{i}.json') as f:
+            all_products.extend(json.load(f))
+    except: pass
+
+# Найти китайские иероглифы
+chinese_pattern = re.compile(r'[\u4e00-\u9fff]')
+
+chinese_in_name = []
+chinese_in_desc = []
+
+for p in all_products:
+    name = p.get('name') or ''
+    desc = p.get('description') or ''
+
+    if chinese_pattern.search(name):
+        chinese_in_name.append(p)
+    if chinese_pattern.search(desc):
+        chinese_in_desc.append(p)
+
+print(f"Китайский в названиях: {len(chinese_in_name)}")
+print(f"Китайский в описаниях: {len(chinese_in_desc)}")
+
+# Сохранить для обработки
+with open('/tmp/chinese_names.json', 'w') as f:
+    json.dump(chinese_in_name, f, ensure_ascii=False)
+with open('/tmp/chinese_desc.json', 'w') as f:
+    json.dump(chinese_in_desc, f, ensure_ascii=False)
+```
+
+### ШАГ 2: Очистить описания от китайского
+
+```python
+import json
+import urllib.request
+import re
+
+SUPABASE_URL = "https://rbngpxwamfkunktxjtqh.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJibmdweHdhbWZrdW5rdHhqdHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1OTk5NDcsImV4cCI6MjA2NDE3NTk0N30.cpW1S5MK7eOfYSZx9gHP_AP-wH5BRIigUFwlBYNA2MI"
+
+chinese_pattern = re.compile(r'[\u4e00-\u9fff]+')
+
+def clean_description(desc):
+    """Удаляет китайские иероглифы из описания"""
+    if not desc:
+        return desc
+    cleaned = chinese_pattern.sub('', desc)
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    cleaned = re.sub(r'\[\s*\]', '', cleaned)
+    if len(cleaned) < 10:
+        return None  # Если осталось мало текста - очищаем полностью
+    return cleaned
+
+def update_product(product_id, new_desc):
+    url = f"{SUPABASE_URL}/rest/v1/products?id=eq.{product_id}"
+    data = json.dumps({"description": new_desc}).encode()
+    req = urllib.request.Request(url, data=data, method='PATCH')
+    req.add_header("apikey", SUPABASE_KEY)
+    req.add_header("Authorization", f"Bearer {SUPABASE_KEY}")
+    req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return True
+    except:
+        return False
+
+# Обработка батчами по 100
+with open('/tmp/chinese_desc.json') as f:
+    products = json.load(f)
+
+for i in range(0, len(products), 100):
+    batch = products[i:i+100]
+    success = 0
+    for p in batch:
+        new_desc = clean_description(p['description'])
+        if update_product(p['id'], new_desc):
+            success += 1
+    print(f"Batch {i//100 + 1}: {success}/{len(batch)}")
+```
+
+### ШАГ 3: Проверить "стрёмные" переводы в названиях
+
+Признаки плохого машинного перевода:
+- Бессмысленные фразы: "Большой -Стекло из стекла"
+- Обрезанные слова: "автомобил", "нержавеющ"
+- Смесь языков: "Shop Taobao продукт"
+- Повторы: "Смеситель смеситель клапан клапан"
+- Транслитерация: "Jiatong" вместо "Цзятун"
+
+```python
+import json
+import re
+
+with open('/tmp/all_products.json') as f:
+    products = json.load(f)
+
+# Паттерны для поиска стрёмных названий
+bad_patterns = [
+    r'\s-\s',           # " - " посреди слова
+    r'[а-яА-Я]{2,}\s[а-яА-Я]{2,}\s\1',  # Повторы слов
+    r'\.{3,}',          # Многоточия
+    r'\[\s*\]',         # Пустые скобки
+    r'Product\s*\d+',   # Product 1, Product 2
+    r'Продукт\s*\d+',   # Продукт 1, Продукт 2
+    r'[A-Za-z]{10,}',   # Длинные английские слова (не бренды)
+]
+
+suspicious = []
+for p in products:
+    name = p.get('name') or ''
+    for pattern in bad_patterns:
+        if re.search(pattern, name):
+            suspicious.append(p)
+            break
+
+print(f"Подозрительных названий: {len(suspicious)}")
+for p in suspicious[:20]:
+    print(f"- {p['name'][:80]}")
+```
+
+### ШАГ 4: Исправить плохие названия
+
+Для каждого товара с плохим названием:
+1. Понять что это за товар по контексту
+2. Написать нормальное русское название
+3. Обновить через PATCH запрос
+
+```python
+def update_name(product_id, new_name):
+    url = f"{SUPABASE_URL}/rest/v1/products?id=eq.{product_id}"
+    data = json.dumps({"name": new_name}).encode()
+    req = urllib.request.Request(url, data=data, method='PATCH')
+    req.add_header("apikey", SUPABASE_KEY)
+    req.add_header("Authorization", f"Bearer {SUPABASE_KEY}")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Prefer", "return=representation")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return True
+    except:
+        return False
+
+# Пример исправлений
+fixes = [
+    ("product_id_here", "Новое нормальное название"),
+    # ...
+]
+
+for pid, new_name in fixes:
+    if update_name(pid, new_name):
+        print(f"✓ {new_name[:50]}")
+```
+
+### Критерии качественного названия:
+1. На чистом русском языке
+2. Понятно что это за товар
+3. Содержит ключевые характеристики (размер, материал, бренд если известен)
+4. Без обрезанных слов и бессмыслицы
+5. Без китайских иероглифов
+6. Длина 30-100 символов
+
+### Примеры хороших названий:
+- "Корзина для столовых приборов из нержавеющей стали"
+- "Шины Dunlop 225/55R17 97W для BMW 5 серии"
+- "Водостойкая тушь для ресниц удлиняющая"
+- "Настенный органайзер для обуви 6 полок"
+
+### Отчёт по завершению:
+После выполнения всех шагов, предоставь отчёт:
+1. Сколько товаров с китайским найдено (в названиях / в описаниях)
+2. Сколько очищено описаний
+3. Сколько исправлено названий
+4. Примеры до/после
