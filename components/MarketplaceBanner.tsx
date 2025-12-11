@@ -36,13 +36,13 @@ export default function MarketplaceBanner() {
       </div>
 
       <div className="relative py-4">
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
 
         <motion.div
-          className="flex gap-12 items-center"
+          className="flex gap-6 md:gap-12 items-center"
           animate={{
-            x: [0, -160 * marketplaces.length],
+            x: [0, -100 * marketplaces.length],
           }}
           transition={{
             x: {
@@ -52,11 +52,15 @@ export default function MarketplaceBanner() {
               ease: "linear",
             },
           }}
+          style={{
+            // @ts-ignore - CSS custom property for responsive animation
+            '--mobile-offset': `-${80 * marketplaces.length}px`,
+          }}
         >
           {duplicatedMarketplaces.map((marketplace, index) => (
             <div
               key={`${marketplace.name}-${index}`}
-              className="flex-shrink-0 w-36 h-24 flex items-center justify-center"
+              className="flex-shrink-0 w-20 h-14 md:w-36 md:h-24 flex items-center justify-center"
             >
               <img
                 src={marketplace.logo}
