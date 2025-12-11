@@ -23,7 +23,6 @@ import ProductCard from './ProductCard'
 import ProductModal from './ProductModal'
 import CategorySidebar from './CategorySidebar'
 import { ProductGridSkeleton } from './ProductSkeleton'
-import VirtualizedProductGrid from './VirtualizedProductGrid'
 import CatalogHeader from '@/components/catalog/CatalogHeader'
 
 // Импорт типов из единого места
@@ -91,6 +90,7 @@ export default function CatalogClient({
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const prefetchedPages = useRef<Set<number>>(new Set())
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null)
+  const isLoadingMoreRef = useRef(false) // Защита от race condition
 
   // Загрузка товаров с API (с AbortController)
   const fetchProducts = useCallback(async (
@@ -143,8 +143,17 @@ export default function CatalogClient({
         return
       }
 
+      // DEBUG: логируем что получили от API
+      console.log(`[Catalog] Page ${pageNum}: received ${data.products?.length || 0} products, total: ${data.total}, hasMore: ${data.hasMore}`)
+
       if (append) {
-        setProducts(prev => [...prev, ...data.products])
+        // Дедупликация: добавляем только товары с новыми id
+        setProducts(prev => {
+          const existingIds = new Set(prev.map(p => p.id))
+          const newProducts = data.products.filter((p: ProductFromAPI) => !existingIds.has(p.id))
+          console.log(`[Catalog] Append: prev=${prev.length}, new=${newProducts.length}, duplicates=${data.products.length - newProducts.length}`)
+          return [...prev, ...newProducts]
+        })
       } else {
         setProducts(data.products)
       }
@@ -161,6 +170,7 @@ export default function CatalogClient({
     } finally {
       setLoading(false)
       setLoadingMore(false)
+      isLoadingMoreRef.current = false
     }
   }, [categories])
 
@@ -223,7 +233,9 @@ export default function CatalogClient({
 
   // Загрузить ещё
   const loadMore = useCallback(() => {
-    if (!hasMore || loadingMore) return
+    // Двойная проверка: state + ref для защиты от race condition
+    if (!hasMore || loadingMore || isLoadingMoreRef.current) return
+    isLoadingMoreRef.current = true
     fetchProducts(selectedCategoryId, searchQuery, page + 1, sortBy, sortOrder, true)
   }, [hasMore, loadingMore, selectedCategoryId, searchQuery, page, sortBy, sortOrder, fetchProducts])
 
@@ -544,66 +556,42 @@ export default function CatalogClient({
               </div>
             ) : (
               <>
-                {/* Виртуализация для больших списков (>100 товаров) */}
-                {products.length > 100 ? (
-                  <VirtualizedProductGrid
-                    products={products.map(apiProductToUI)}
-                    onAddToCart={(product) => {
-                      const original = products.find(p => p.id === product.id)
-                      if (original) addToCart(original)
-                    }}
-                    onViewDetails={(product) => {
-                      const original = products.find(p => p.id === product.id)
-                      if (original) {
-                        setSelectedProduct(original)
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8 auto-rows-fr">
+                  {products.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={apiProductToUI(product)}
+                      onAddToCart={() => addToCart(product)}
+                      onViewDetails={() => {
+                        setSelectedProduct(product)
                         setIsModalOpen(true)
-                      }
-                    }}
-                    onLoadMore={hasMore ? loadMore : undefined}
-                    hasMore={hasMore}
-                    isLoading={loadingMore}
-                  />
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
-                      {products.map((product) => (
-                        <div key={product.id} className="product-card">
-                          <ProductCard
-                            product={apiProductToUI(product)}
-                            onAddToCart={() => addToCart(product)}
-                            onViewDetails={() => {
-                              setSelectedProduct(product)
-                              setIsModalOpen(true)
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
+                      }}
+                    />
+                  ))}
+                </div>
 
-                    {/* Prefetch trigger - невидимый элемент для IntersectionObserver */}
-                    <div ref={loadMoreTriggerRef} className="h-1" aria-hidden="true" />
+                {/* Prefetch trigger - невидимый элемент для IntersectionObserver */}
+                <div ref={loadMoreTriggerRef} className="h-1" aria-hidden="true" />
 
-                    {/* Load More */}
-                    {hasMore && (
-                      <div className="flex justify-center mt-8">
-                        <Button
-                          onClick={loadMore}
-                          disabled={loadingMore}
-                          variant="outline"
-                          className="min-w-[200px]"
-                        >
-                          {loadingMore ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Загрузка...
-                            </>
-                          ) : (
-                            `Загрузить ещё (${total - products.length} осталось)`
-                          )}
-                        </Button>
-                      </div>
-                    )}
-                  </>
+                {/* Load More */}
+                {hasMore && (
+                  <div className="flex justify-center mt-8">
+                    <Button
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      variant="outline"
+                      className="min-w-[200px]"
+                    >
+                      {loadingMore ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Загрузка...
+                        </>
+                      ) : (
+                        `Загрузить ещё (${total - products.length} осталось)`
+                      )}
+                    </Button>
+                  </div>
                 )}
               </>
             )}
