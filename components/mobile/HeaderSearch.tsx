@@ -291,13 +291,45 @@ export default function MobileHeaderSearch({ onExpandChange, isSticky = false }:
       {isSticky ? (
         /* iOS Safari style - полупрозрачная пилюля */
         <div
-          onClick={handleInputClick}
-          className="flex items-center gap-2.5 bg-black/[0.06] rounded-[10px] px-3 py-2 w-full active:bg-black/[0.12] transition-colors cursor-pointer"
+          className="flex items-center gap-2 bg-black/[0.06] rounded-[10px] px-3 py-2 w-full"
         >
-          <Search className="h-4 w-4 text-gray-500 flex-shrink-0" />
-          <span className="flex-1 text-[15px] text-gray-500 truncate">
-            {query || 'Поиск'}
-          </span>
+          <div
+            onClick={handleInputClick}
+            className="flex items-center gap-2 flex-1 cursor-pointer active:opacity-70"
+          >
+            <Search className="h-4 w-4 text-gray-500 flex-shrink-0" />
+            <span className="flex-1 text-[15px] text-gray-500 truncate">
+              {query || 'Поиск'}
+            </span>
+          </div>
+
+          {/* Кнопки функционала */}
+          <div className="flex items-center gap-0.5 border-l border-gray-300 pl-2">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsModalOpen(true)
+                setActiveTool('photo')
+                setIsExpanded(true)
+              }}
+              className="p-2 rounded-full active:bg-black/10"
+            >
+              <Camera className="h-4 w-4 text-gray-500" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsModalOpen(true)
+                setActiveTool('link')
+                setIsExpanded(true)
+              }}
+              className="p-2 rounded-full active:bg-black/10"
+            >
+              <Link2 className="h-4 w-4 text-gray-500" />
+            </button>
+          </div>
         </div>
       ) : (
         /* Обычная форма для hero section */
