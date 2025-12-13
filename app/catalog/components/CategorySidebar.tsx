@@ -124,9 +124,8 @@ export default function CategorySidebar({
                 }`}
                 onClick={() => {
                   if (hasSubcategories) {
-                    // Раскрываем подкатегории, выбираем root, но НЕ закрываем сайдбар на мобильных
+                    // Только раскрываем/сворачиваем подкатегории, НЕ выбираем и НЕ загружаем товары
                     toggleExpanded(rootCategory.id)
-                    onCategorySelect(rootCategory.id, false)
                   } else {
                     // Нет подкатегорий — выбираем и закрываем
                     onCategorySelect(rootCategory.id, true)
