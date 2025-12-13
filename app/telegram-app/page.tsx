@@ -11,18 +11,37 @@ declare global {
         ready: () => void
         expand: () => void
         close: () => void
+        isExpanded: boolean
+        viewportHeight: number
+        viewportStableHeight: number
         MainButton: {
+          text: string
+          color: string
+          textColor: string
+          isVisible: boolean
+          isActive: boolean
+          isProgressVisible: boolean
           setText: (text: string) => void
+          show: () => void
+          hide: () => void
+          enable: () => void
+          disable: () => void
+          showProgress: (leaveActive?: boolean) => void
+          hideProgress: () => void
+          onClick: (callback: () => void) => void
+          offClick: (callback: () => void) => void
+        }
+        BackButton: {
+          isVisible: boolean
           show: () => void
           hide: () => void
           onClick: (callback: () => void) => void
           offClick: (callback: () => void) => void
         }
-        BackButton: {
-          show: () => void
-          hide: () => void
-          onClick: (callback: () => void) => void
-          offClick: (callback: () => void) => void
+        HapticFeedback: {
+          impactOccurred: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void
+          notificationOccurred: (type: 'error' | 'success' | 'warning') => void
+          selectionChanged: () => void
         }
         themeParams: {
           bg_color?: string
@@ -31,19 +50,53 @@ declare global {
           link_color?: string
           button_color?: string
           button_text_color?: string
+          secondary_bg_color?: string
+          header_bg_color?: string
+          accent_text_color?: string
+          section_bg_color?: string
+          section_header_text_color?: string
+          subtitle_text_color?: string
+          destructive_text_color?: string
+        }
+        safeAreaInset: {
+          top: number
+          bottom: number
+          left: number
+          right: number
+        }
+        contentSafeAreaInset: {
+          top: number
+          bottom: number
+          left: number
+          right: number
         }
         initData: string
         initDataUnsafe: {
+          query_id?: string
           user?: {
             id: number
             first_name: string
             last_name?: string
             username?: string
+            language_code?: string
+            is_premium?: boolean
           }
+          auth_date?: number
+          hash?: string
         }
         sendData: (data: string) => void
         platform: string
         version: string
+        colorScheme: 'light' | 'dark'
+        headerColor: string
+        backgroundColor: string
+        isClosingConfirmationEnabled: boolean
+        enableClosingConfirmation: () => void
+        disableClosingConfirmation: () => void
+        setHeaderColor: (color: string) => void
+        setBackgroundColor: (color: string) => void
+        onEvent: (eventType: string, callback: () => void) => void
+        offEvent: (eventType: string, callback: () => void) => void
       }
     }
   }
@@ -130,8 +183,12 @@ export default function TelegramAppPage() {
   const [error, setError] = useState<string | null>(null)
   const [sdkReady, setSdkReady] = useState(false)
   const [debugInfo, setDebugInfo] = useState<string[]>([])
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [safeAreaInsets, setSafeAreaInsets] = useState({ top: 0, bottom: 0, left: 0, right: 0 })
+  const [isUserValidated, setIsUserValidated] = useState(false)
   const initAttempts = useRef(0)
   const maxInitAttempts = 20
+  const mainButtonCallbackRef = useRef<(() => void) | null>(null)
 
   // Поиск
   const [searchMode, setSearchMode] = useState<SearchMode>('none')
@@ -150,9 +207,32 @@ export default function TelegramAppPage() {
     setDebugInfo(prev => [...prev.slice(-9), `${timestamp}: ${msg}`])
   }, [])
 
+  // Валидация initData на бэкенде
+  const validateInitData = useCallback(async (initData: string) => {
+    try {
+      const response = await fetch('/api/telegram/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData })
+      })
+      const result = await response.json()
+      if (result.valid) {
+        setIsUserValidated(true)
+        addDebug(`Пользователь валидирован: ${result.user?.first_name || 'Unknown'}`)
+        return true
+      } else {
+        addDebug('Ошибка валидации initData')
+        return false
+      }
+    } catch (err) {
+      addDebug(`Ошибка запроса валидации: ${err}`)
+      return false
+    }
+  }, [addDebug])
+
   // Инициализация Telegram WebApp с retry логикой
   useEffect(() => {
-    const initTelegram = () => {
+    const initTelegram = async () => {
       initAttempts.current++
 
       const telegram = window.Telegram?.WebApp
@@ -167,8 +247,33 @@ export default function TelegramAppPage() {
           setSdkReady(true)
           addDebug('SDK инициализирован успешно')
 
+          // Устанавливаем цвета темы
           if (telegram.themeParams.bg_color) {
             document.body.style.backgroundColor = telegram.themeParams.bg_color
+          }
+
+          // Устанавливаем цвет заголовка
+          if (telegram.themeParams.header_bg_color) {
+            telegram.setHeaderColor(telegram.themeParams.header_bg_color)
+          }
+
+          // Safe Area Insets (доступны в версии 7.0+)
+          if (telegram.safeAreaInset) {
+            setSafeAreaInsets(telegram.safeAreaInset)
+            addDebug(`Safe Areas: top=${telegram.safeAreaInset.top}, bottom=${telegram.safeAreaInset.bottom}`)
+          }
+
+          // Подписываемся на изменения viewport
+          telegram.onEvent('viewportChanged', () => {
+            addDebug(`Viewport изменился: ${telegram.viewportHeight}px`)
+          })
+
+          // Валидируем initData если есть
+          if (telegram.initData) {
+            await validateInitData(telegram.initData)
+          } else {
+            addDebug('initData отсутствует (режим разработки)')
+            setIsUserValidated(true) // В режиме разработки пропускаем
           }
         } catch (e) {
           addDebug(`Ошибка инициализации SDK: ${e}`)
@@ -192,6 +297,7 @@ export default function TelegramAppPage() {
         if (initAttempts.current >= maxInitAttempts && !window.Telegram?.WebApp) {
           addDebug('Таймаут ожидания SDK - работаем без него')
           setSdkReady(true)
+          setIsUserValidated(true) // Режим без Telegram
         }
       } else {
         addDebug(`Попытка ${initAttempts.current}/${maxInitAttempts}...`)
@@ -199,7 +305,7 @@ export default function TelegramAppPage() {
     }, 100)
 
     return () => clearInterval(interval)
-  }, [addDebug])
+  }, [addDebug, validateInitData])
 
   // Загрузка категорий
   const loadCategories = useCallback(async () => {
@@ -281,17 +387,79 @@ export default function TelegramAppPage() {
 
   const handleProductClick = useCallback((product: Product) => {
     const telegram = tg?.WebApp
-    if (telegram?.MainButton) {
+    if (!telegram) return
+
+    setSelectedProduct(product)
+
+    // Haptic feedback при выборе товара
+    if (telegram.HapticFeedback) {
+      telegram.HapticFeedback.selectionChanged()
+    }
+
+    // Показываем BackButton для возврата к каталогу
+    if (telegram.BackButton) {
+      telegram.BackButton.show()
+    }
+
+    // Удаляем предыдущий callback если есть
+    if (mainButtonCallbackRef.current && telegram.MainButton) {
+      telegram.MainButton.offClick(mainButtonCallbackRef.current)
+    }
+
+    // Создаём новый callback
+    const newCallback = () => {
+      // Haptic feedback при заказе
+      if (telegram.HapticFeedback) {
+        telegram.HapticFeedback.notificationOccurred('success')
+      }
+      telegram.sendData(JSON.stringify({
+        action: 'order',
+        product_id: product.id,
+        product_name: product.name,
+        price: product.price
+      }))
+    }
+
+    // Сохраняем ссылку на callback
+    mainButtonCallbackRef.current = newCallback
+
+    // Настраиваем MainButton
+    if (telegram.MainButton) {
       telegram.MainButton.setText(`Заказать: ${product.name.slice(0, 30)}...`)
       telegram.MainButton.show()
-      telegram.MainButton.onClick(() => {
-        telegram.sendData(JSON.stringify({
-          action: 'order',
-          product_id: product.id,
-          product_name: product.name,
-          price: product.price
-        }))
-      })
+      telegram.MainButton.onClick(newCallback)
+    }
+  }, [tg])
+
+  // Обработчик BackButton - возврат к каталогу
+  useEffect(() => {
+    const telegram = tg?.WebApp
+    if (!telegram?.BackButton) return
+
+    const handleBack = () => {
+      setSelectedProduct(null)
+
+      // Скрываем MainButton при возврате
+      if (telegram.MainButton) {
+        telegram.MainButton.hide()
+        if (mainButtonCallbackRef.current) {
+          telegram.MainButton.offClick(mainButtonCallbackRef.current)
+          mainButtonCallbackRef.current = null
+        }
+      }
+
+      telegram.BackButton.hide()
+
+      // Haptic feedback
+      if (telegram.HapticFeedback) {
+        telegram.HapticFeedback.impactOccurred('light')
+      }
+    }
+
+    telegram.BackButton.onClick(handleBack)
+
+    return () => {
+      telegram.BackButton.offClick(handleBack)
     }
   }, [tg])
 
@@ -443,7 +611,17 @@ export default function TelegramAppPage() {
   const displayProducts = searchResults !== null ? searchResults : products
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: bgColor, color: textColor }}>
+    <div
+      className="min-h-screen"
+      style={{
+        backgroundColor: bgColor,
+        color: textColor,
+        paddingTop: safeAreaInsets.top,
+        paddingBottom: Math.max(safeAreaInsets.bottom, 80), // 80px для MainButton
+        paddingLeft: safeAreaInsets.left,
+        paddingRight: safeAreaInsets.right
+      }}
+    >
       {/* Header */}
       <div className="sticky top-0 z-10 p-4 border-b" style={{ backgroundColor: bgColor, borderColor: hintColor }}>
         <h1 className="text-xl font-bold mb-3">Каталог TechnoModern</h1>

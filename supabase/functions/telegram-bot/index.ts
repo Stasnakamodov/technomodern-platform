@@ -136,6 +136,51 @@ async function editMessageText(
   return response.json();
 }
 
+// Настройка Menu Button для Mini App
+async function setChatMenuButton(chatId?: number) {
+  const response = await fetch(
+    `https://api.telegram.org/bot${BOT_TOKEN}/setChatMenuButton`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId, // если не указан - устанавливает дефолт для всех
+        menu_button: {
+          type: "web_app",
+          text: "🛒 Каталог",
+          web_app: {
+            url: "https://techno-modern.ru/telegram-app"
+          }
+        }
+      }),
+    }
+  );
+  return response.json();
+}
+
+// Установить Menu Button по умолчанию для бота (вызывается один раз)
+async function setDefaultMenuButton() {
+  const response = await fetch(
+    `https://api.telegram.org/bot${BOT_TOKEN}/setChatMenuButton`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        menu_button: {
+          type: "web_app",
+          text: "🛒 Каталог",
+          web_app: {
+            url: "https://techno-modern.ru/telegram-app"
+          }
+        }
+      }),
+    }
+  );
+  const result = await response.json();
+  console.log("setDefaultMenuButton result:", result);
+  return result;
+}
+
 // Check if user is admin
 async function isAdmin(telegramId: number): Promise<boolean> {
   const { data } = await supabase
@@ -196,29 +241,33 @@ async function handleStart(message: TelegramMessage) {
   const isUserAdmin = await isAdmin(userId);
 
   let text = `<b>Добро пожаловать, ${firstName}!</b>\n\n`;
-  text += `Я бот ТехноМодерн - помогу вам с закупками товаров из Китая.\n\n`;
+  text += `🚀 <b>ТехноМодерн</b> — ваш надёжный партнёр по закупкам из Китая\n\n`;
+  text += `Что мы делаем:\n`;
+  text += `• Находим поставщиков любых товаров\n`;
+  text += `• Проверяем качество и надёжность\n`;
+  text += `• Организуем доставку в Россию\n\n`;
+  text += `👇 <b>Выберите действие:</b>`;
 
-  const keyboard: { text: string; callback_data?: string; url?: string }[][] = [];
+  const keyboard: { text: string; callback_data?: string; url?: string; web_app?: { url: string } }[][] = [];
 
+  // Админские кнопки
   if (isUserAdmin) {
-    text += `<i>У вас есть права администратора</i>\n\n`;
     keyboard.push([
       { text: "📋 Заявки", callback_data: "admin_orders" },
       { text: "📊 Статистика", callback_data: "admin_stats" },
     ]);
-    keyboard.push([
-      { text: "➕ Добавить товар", callback_data: "admin_add_product" },
-    ]);
   }
 
+  // Основные кнопки для клиентов
   keyboard.push([
-    { text: "📦 Открыть каталог", web_app: { url: "https://techno-modern.ru/telegram-app" } },
-    { text: "📝 Оставить заявку", callback_data: "new_order" },
+    { text: "🔍 Найти поставщика", callback_data: "find_supplier" },
+  ]);
+  keyboard.push([
+    { text: "💬 Связаться с нами", callback_data: "contact_form" },
   ]);
   keyboard.push([
     { text: "🌐 Перейти на сайт", url: "https://techno-modern.ru" },
   ]);
-  keyboard.push([{ text: "📞 Связаться с нами", callback_data: "contact" }]);
 
   await sendMessage(message.chat.id, text, {
     reply_markup: { inline_keyboard: keyboard },
@@ -229,16 +278,23 @@ async function handleHelp(message: TelegramMessage) {
   const userId = message.from.id;
   const isUserAdmin = await isAdmin(userId);
 
-  let text = `<b>Доступные команды:</b>\n\n`;
-  text += `/start - Начать работу\n`;
-  text += `/help - Помощь\n`;
-  text += `/catalog - Каталог товаров\n`;
-  text += `/order - Оставить заявку\n`;
+  let text = `<b>📖 Как пользоваться ботом:</b>\n\n`;
+  text += `<b>🔍 Найти поставщика</b>\n`;
+  text += `Опишите товар, который ищете. Можно:\n`;
+  text += `• Написать название товара\n`;
+  text += `• Отправить ссылку с маркетплейса\n`;
+  text += `• Прикрепить фото товара\n\n`;
+  text += `<b>💬 Связаться с нами</b>\n`;
+  text += `Напишите любой вопрос — мы ответим!\n\n`;
+  text += `<b>Команды:</b>\n`;
+  text += `/start - Главное меню\n`;
+  text += `/help - Эта справка\n`;
 
   if (isUserAdmin) {
-    text += `\n<b>Админские команды:</b>\n`;
+    text += `\n<b>Админ-команды:</b>\n`;
     text += `/orders - Список заявок\n`;
     text += `/stats - Статистика\n`;
+    text += `/setmenu - Настроить Menu Button\n`;
   }
 
   await sendMessage(message.chat.id, text);
@@ -323,37 +379,77 @@ async function handleStats(message: TelegramMessage) {
   await sendMessage(message.chat.id, text);
 }
 
-async function handleCatalog(message: TelegramMessage) {
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("id, name, slug")
-    .order("name");
+// Админская команда для настройки Menu Button
+async function handleSetMenu(message: TelegramMessage) {
+  const userId = message.from.id;
+  const isUserAdmin = await isAdmin(userId);
 
-  if (!categories || categories.length === 0) {
-    await sendMessage(message.chat.id, "Каталог пока пуст.");
+  if (!isUserAdmin) {
+    await sendMessage(message.chat.id, "У вас нет доступа к этой команде.");
     return;
   }
 
-  const text = `<b>📦 Каталог товаров</b>\n\nВыберите категорию:`;
+  const result = await setDefaultMenuButton();
 
-  const keyboard = categories.map((cat) => [
-    { text: cat.name, callback_data: `cat_${cat.slug}` },
-  ]);
+  if (result.ok) {
+    await sendMessage(message.chat.id,
+      "✅ <b>Menu Button установлен!</b>\n\n" +
+      "Теперь у всех пользователей бота слева внизу появится кнопка «🛒 Каталог» для входа в Mini App.\n\n" +
+      "URL: https://techno-modern.ru/telegram-app"
+    );
+  } else {
+    await sendMessage(message.chat.id,
+      `❌ Ошибка установки Menu Button:\n\n<code>${JSON.stringify(result, null, 2)}</code>`
+    );
+  }
+}
 
-  await sendMessage(message.chat.id, text, {
-    reply_markup: { inline_keyboard: keyboard },
+// Обработчик "Найти поставщика" - главная функция бота
+async function handleFindSupplier(message: TelegramMessage) {
+  await setState(message.from.id, "find_supplier", "description", {});
+
+  const text = `<b>🔍 Поиск поставщика</b>\n\n`;
+  const fullText = text +
+    `Опишите товар, который хотите найти:\n\n` +
+    `📝 <i>Например: "iPhone 15 Pro Max 256GB чёрный" или "Кроссовки Nike Air Max 90"</i>\n\n` +
+    `💡 <b>Совет:</b> Чем подробнее опишете — тем точнее найдём!\n\n` +
+    `Также можете:\n` +
+    `• 📎 Прикрепить фото товара\n` +
+    `• 🔗 Отправить ссылку с маркетплейса`;
+
+  await sendMessage(message.chat.id, fullText, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "❌ Отмена", callback_data: "cancel_request" }],
+        [{ text: "« Главное меню", callback_data: "main_menu" }]
+      ],
+    },
   });
 }
 
-async function handleNewOrder(message: TelegramMessage) {
-  await setState(message.from.id, "creating_order", "name", {});
+// Обработчик "Связаться с нами" - простая форма обратной связи
+async function handleContactForm(message: TelegramMessage) {
+  await setState(message.from.id, "contact_form", "message", {});
 
-  const text = `<b>📝 Новая заявка</b>\n\nКак вас зовут?`;
-  await sendMessage(message.chat.id, text, {
+  const text = `<b>💬 Связаться с нами</b>\n\n`;
+  const fullText = text +
+    `Напишите ваш вопрос или сообщение.\n\n` +
+    `Можете прикрепить фото, если нужно что-то показать.\n\n` +
+    `Мы ответим в ближайшее время! ⚡`;
+
+  await sendMessage(message.chat.id, fullText, {
     reply_markup: {
-      inline_keyboard: [[{ text: "❌ Отмена", callback_data: "cancel_order" }]],
+      inline_keyboard: [
+        [{ text: "❌ Отмена", callback_data: "cancel_request" }],
+        [{ text: "« Главное меню", callback_data: "main_menu" }]
+      ],
     },
   });
+}
+
+// Устаревший обработчик - перенаправляем на новый
+async function handleNewOrder(message: TelegramMessage) {
+  await handleFindSupplier(message);
 }
 
 // Callback query handler
@@ -367,17 +463,34 @@ async function handleCallbackQuery(callbackQuery: CallbackQuery) {
 
   await answerCallbackQuery(id);
 
-  if (data === "catalog") {
-    await handleCatalog(message);
-  } else if (data === "new_order") {
-    await handleNewOrder(message);
+  // === ОСНОВНЫЕ КНОПКИ ===
+  if (data === "find_supplier") {
+    await handleFindSupplier(message);
+  } else if (data === "contact_form") {
+    await handleContactForm(message);
+  } else if (data === "main_menu") {
+    await clearState(from.id);
+    await handleStart(message);
+  } else if (data === "cancel_request") {
+    await clearState(from.id);
+    await sendMessage(message.chat.id, "✅ Запрос отменён.\n\nНажмите /start чтобы вернуться в главное меню.");
+
+  // === АДМИНСКИЕ КНОПКИ ===
   } else if (data === "admin_orders") {
     await handleOrders(message);
   } else if (data === "admin_stats") {
     await handleStats(message);
+
+  // === УСТАРЕВШИЕ (для совместимости) ===
+  } else if (data === "new_order") {
+    await handleFindSupplier(message);
   } else if (data === "cancel_order") {
     await clearState(from.id);
     await sendMessage(message.chat.id, "Заявка отменена.");
+  } else if (data === "contact") {
+    await handleContactForm(message);
+
+  // === ОБРАБОТКА ЗАЯВОК ===
   } else if (data.startsWith("order_")) {
     const orderId = data.replace("order_", "");
     const { data: order } = await supabase
@@ -421,34 +534,7 @@ async function handleCallbackQuery(callbackQuery: CallbackQuery) {
       .update({ status: "cancelled" })
       .eq("id", orderId);
     await sendMessage(message.chat.id, `❌ Заявка #${orderId.slice(0, 8)} отклонена.`);
-  } else if (data.startsWith("cat_")) {
-    const slug = data.replace("cat_", "");
-    const { data: products } = await supabase
-      .from("products")
-      .select("id, name, price")
-      .eq("category_slug", slug)
-      .limit(10);
-
-    if (!products || products.length === 0) {
-      await sendMessage(message.chat.id, "В этой категории пока нет товаров.");
-      return;
-    }
-
-    let text = `<b>Товары в категории:</b>\n\n`;
-    for (const product of products) {
-      text += `• ${product.name}\n`;
-      if (product.price) text += `  💰 ${product.price} ₽\n`;
-    }
-
-    await sendMessage(message.chat.id, text);
-  } else if (data === "contact") {
-    const text = `<b>📞 Контакты</b>\n\n`;
-    const contactText =
-      text +
-      `Telegram: @technomodern_support\n` +
-      `Сайт: techno-modern.ru`;
-    await sendMessage(message.chat.id, contactText);
-  } else if (data === "submit_order") {
+  } else if (data === "submit_order" || data === "submit_supplier_request") {
     // CRITICAL: Сохранение заявки в базу данных
     const state = await getState(from.id);
     if (state && state.data) {
@@ -517,10 +603,215 @@ async function handleCallbackQuery(callbackQuery: CallbackQuery) {
   }
 }
 
+// Функция пересылки фото админам
+async function forwardPhotoToAdmins(
+  fileId: string,
+  caption: string,
+  excludeTelegramId?: number
+) {
+  const { data: admins } = await supabase
+    .from("admin_users")
+    .select("telegram_id")
+    .eq("is_active", true);
+
+  if (!admins) return;
+
+  for (const admin of admins) {
+    if (admin.telegram_id !== excludeTelegramId) {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: admin.telegram_id,
+          photo: fileId,
+          caption,
+          parse_mode: "HTML",
+        }),
+      });
+    }
+  }
+}
+
 // Message handler for multi-step dialogs
 async function handleMessage(message: TelegramMessage) {
   const state = await getState(message.from.id);
+  const userId = message.from.id;
+  const userName = message.from.first_name + (message.from.last_name ? ` ${message.from.last_name}` : '');
+  const username = message.from.username ? `@${message.from.username}` : 'нет username';
 
+  // === СОСТОЯНИЕ: Поиск поставщика ===
+  if (state && state.state === "find_supplier") {
+    const data = state.data || {};
+
+    // Получили описание товара (текст, ссылка или фото)
+    if (state.step === "description") {
+      let productDescription = message.text || '';
+      let hasPhoto = false;
+      let photoFileId = '';
+
+      // Проверяем наличие фото
+      if (message.photo && message.photo.length > 0) {
+        hasPhoto = true;
+        // Берём фото максимального размера
+        photoFileId = message.photo[message.photo.length - 1].file_id;
+        productDescription = message.text || '(фото без описания)';
+      }
+
+      if (!productDescription && !hasPhoto) {
+        await sendMessage(message.chat.id, "Пожалуйста, опишите товар или отправьте фото:");
+        return;
+      }
+
+      // Определяем тип запроса
+      let requestType = 'текст';
+      if (hasPhoto) requestType = 'фото';
+      else if (productDescription.includes('http')) requestType = 'ссылка';
+
+      // Сохраняем заявку в БД
+      const { data: newRequest, error } = await supabase
+        .from("orders")
+        .insert({
+          customer_name: userName,
+          customer_phone: username, // Используем username вместо телефона
+          product_name: productDescription,
+          telegram_id: userId,
+          status: "new",
+          source: "telegram_supplier_search",
+          message: hasPhoto ? `[ФОТО] ${productDescription}` : productDescription
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating supplier request:", error);
+        await sendMessage(message.chat.id,
+          "❌ Произошла ошибка. Попробуйте позже или напишите нам напрямую @technomodern_support");
+      } else {
+        // Подтверждение пользователю
+        await sendMessage(message.chat.id,
+          `✅ <b>Заявка принята!</b>\n\n` +
+          `📋 Номер: #${newRequest.id.slice(0, 8)}\n` +
+          `📝 Запрос: ${productDescription.slice(0, 100)}${productDescription.length > 100 ? '...' : ''}\n\n` +
+          `Мы найдём поставщика и свяжемся с вами в Telegram!\n\n` +
+          `⏱ Обычно отвечаем в течение 2-4 часов.`,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "🔍 Новый поиск", callback_data: "find_supplier" }],
+                [{ text: "« Главное меню", callback_data: "main_menu" }]
+              ]
+            }
+          }
+        );
+
+        // Уведомление админам
+        const adminText = `🔔 <b>Новый запрос на поиск!</b>\n\n` +
+          `👤 ${userName} (${username})\n` +
+          `🆔 Telegram ID: ${userId}\n` +
+          `📝 Тип: ${requestType}\n\n` +
+          `<b>Запрос:</b>\n${productDescription}\n\n` +
+          `#${newRequest.id.slice(0, 8)}`;
+
+        if (hasPhoto) {
+          await forwardPhotoToAdmins(photoFileId, adminText);
+        } else {
+          const { data: admins } = await supabase
+            .from("admin_users")
+            .select("telegram_id")
+            .eq("is_active", true);
+
+          if (admins) {
+            for (const admin of admins) {
+              await sendMessage(admin.telegram_id, adminText);
+            }
+          }
+        }
+      }
+
+      await clearState(userId);
+      return;
+    }
+  }
+
+  // === СОСТОЯНИЕ: Связаться с нами ===
+  if (state && state.state === "contact_form") {
+    let userMessage = message.text || '';
+    let hasPhoto = false;
+    let photoFileId = '';
+
+    // Проверяем наличие фото
+    if (message.photo && message.photo.length > 0) {
+      hasPhoto = true;
+      photoFileId = message.photo[message.photo.length - 1].file_id;
+      userMessage = message.text || '(фото без сообщения)';
+    }
+
+    if (!userMessage && !hasPhoto) {
+      await sendMessage(message.chat.id, "Пожалуйста, напишите сообщение или отправьте фото:");
+      return;
+    }
+
+    // Сохраняем обращение
+    const { data: newContact, error } = await supabase
+      .from("orders")
+      .insert({
+        customer_name: userName,
+        customer_phone: username,
+        product_name: "Обращение в поддержку",
+        telegram_id: userId,
+        status: "new",
+        source: "telegram_contact",
+        message: hasPhoto ? `[ФОТО] ${userMessage}` : userMessage
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating contact:", error);
+      await sendMessage(message.chat.id,
+        "❌ Произошла ошибка. Напишите напрямую @technomodern_support");
+    } else {
+      await sendMessage(message.chat.id,
+        `✅ <b>Сообщение отправлено!</b>\n\n` +
+        `Мы ответим вам в ближайшее время.\n\n` +
+        `📋 Номер обращения: #${newContact.id.slice(0, 8)}`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "« Главное меню", callback_data: "main_menu" }]
+            ]
+          }
+        }
+      );
+
+      // Уведомление админам
+      const adminText = `💬 <b>Новое обращение!</b>\n\n` +
+        `👤 ${userName} (${username})\n` +
+        `🆔 Telegram ID: ${userId}\n\n` +
+        `<b>Сообщение:</b>\n${userMessage}\n\n` +
+        `#${newContact.id.slice(0, 8)}`;
+
+      if (hasPhoto) {
+        await forwardPhotoToAdmins(photoFileId, adminText);
+      } else {
+        const { data: admins } = await supabase
+          .from("admin_users")
+          .select("telegram_id")
+          .eq("is_active", true);
+
+        if (admins) {
+          for (const admin of admins) {
+            await sendMessage(admin.telegram_id, adminText);
+          }
+        }
+      }
+    }
+
+    await clearState(userId);
+    return;
+  }
+
+  // === СОСТОЯНИЕ: Старая форма заказа (для совместимости) ===
   if (state && state.state === "creating_order") {
     const data = state.data || {};
 
@@ -533,7 +824,6 @@ async function handleMessage(message: TelegramMessage) {
       await setState(message.from.id, "creating_order", "phone", data);
       await sendMessage(message.chat.id, "Введите номер телефона:");
     } else if (state.step === "phone") {
-      // Валидация телефона
       const phone = message.text?.replace(/\D/g, '') || '';
       if (phone.length < 10 || phone.length > 12) {
         await sendMessage(message.chat.id,
@@ -542,10 +832,7 @@ async function handleMessage(message: TelegramMessage) {
       }
       data.phone = message.text;
       await setState(message.from.id, "creating_order", "product", data);
-      await sendMessage(
-        message.chat.id,
-        "Что хотите заказать? (название или ссылка)"
-      );
+      await sendMessage(message.chat.id, "Что хотите заказать? (название или ссылка)");
     } else if (state.step === "product") {
       data.product = message.text;
       await setState(message.from.id, "creating_order", "confirm", data);
@@ -569,10 +856,21 @@ async function handleMessage(message: TelegramMessage) {
     return;
   }
 
-  // Unknown message
+  // === Сообщение без состояния ===
+  // Показываем подсказку
   await sendMessage(
     message.chat.id,
-    "Используйте команды или кнопки меню. Введите /help для справки."
+    "👋 Используйте кнопки меню или команду /start\n\n" +
+    "Или просто опишите, какой товар ищете — мы поможем найти поставщика!",
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🔍 Найти поставщика", callback_data: "find_supplier" }],
+          [{ text: "💬 Связаться с нами", callback_data: "contact_form" }],
+          [{ text: "« Главное меню", callback_data: "main_menu" }]
+        ]
+      }
+    }
   );
 }
 
@@ -612,8 +910,8 @@ Deno.serve(async (req: Request) => {
         await handleOrders(message);
       } else if (text.startsWith("/stats")) {
         await handleStats(message);
-      } else if (text.startsWith("/catalog")) {
-        await handleCatalog(message);
+      } else if (text.startsWith("/setmenu")) {
+        await handleSetMenu(message);
       } else if (text.startsWith("/order")) {
         await handleNewOrder(message);
       } else {
