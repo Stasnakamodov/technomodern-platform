@@ -556,24 +556,7 @@ export default function CatalogClient({
               </div>
             ) : (
               <>
-                {/* Mobile: горизонтальный свайп */}
-                <div className="md:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory pb-4 -mx-3 px-3 scrollbar-hide">
-                  {products.map((product) => (
-                    <div key={product.id} className="snap-start flex-shrink-0 w-[85vw]">
-                      <ProductCard
-                        product={apiProductToUI(product)}
-                        onAddToCart={() => addToCart(product)}
-                        onViewDetails={() => {
-                          setSelectedProduct(product)
-                          setIsModalOpen(true)
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Desktop: grid */}
-                <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8 auto-rows-fr">
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8 auto-rows-fr">
                   {products.map((product) => (
                     <ProductCard
                       key={product.id}
