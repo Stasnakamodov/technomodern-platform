@@ -62,8 +62,8 @@ export default function HeroSectionMobile() {
   }, [])
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 px-4 py-16">
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <section className="relative min-h-[90vh] flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 px-4 py-16 overflow-hidden">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Mobile: только относительные размеры для адаптивности */}
           <div
