@@ -76,7 +76,7 @@ export default function ProductCard({
     >
       <Card className="shadow-md hover:shadow-xl transition-shadow duration-300 border-gray-200 hover:border-gray-300 bg-white overflow-hidden flex flex-col h-full min-h-[360px] sm:min-h-[400px] md:min-h-[440px] lg:min-h-[480px]">
         {/* Изображение товара */}
-        <div className="relative w-full h-44 sm:h-52 md:h-56 lg:h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+        <div className="relative w-full h-52 sm:h-52 md:h-56 lg:h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
           {hasValidImages ? (
             <>
               {/* Мобильная версия со свайпом (только если есть несколько изображений) */}
@@ -166,8 +166,8 @@ export default function ProductCard({
           )}
         </div>
 
-        <CardHeader className="pb-3">
-          <div className="space-y-2">
+        <CardHeader className="pb-1 sm:pb-3">
+          <div className="space-y-1 sm:space-y-2">
             {/* Заголовок */}
             <h3 className="font-semibold text-base sm:text-lg text-gray-900 line-clamp-2 hover:text-gray-700 transition-colors">
               {product.name}
@@ -183,7 +183,7 @@ export default function ProductCard({
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0 space-y-4 flex-1 flex flex-col">
+        <CardContent className="pt-0 space-y-2 sm:space-y-4 flex-1 flex flex-col">
           {/* Цена и MOQ */}
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
