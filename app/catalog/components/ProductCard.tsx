@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -29,8 +29,10 @@ export default function ProductCard({
   onViewDetails,
   onContactSupplier
 }: ProductCardProps) {
-  const [imageError, setImageError] = useState(false)
-  const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set())
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   // Безопасность: проверка данных товара
   if (!product || !product.id || !product.name) {
@@ -38,14 +40,34 @@ export default function ProductCard({
     return null
   }
 
-  const hasValidImage = product.images && product.images.length > 0 && !imageError
-  const imageUrl = hasValidImage ? product.images[0] : null
+  // Фильтруем валидные изображения
+  const validImages = product.images?.filter((_, index) => !imageErrors.has(index)) || []
+  const hasValidImages = validImages.length > 0
+  const hasMultipleImages = validImages.length > 1
+
+  const handleImageError = useCallback((index: number) => {
+    setImageErrors(prev => new Set(prev).add(index))
+  }, [])
+
+  const handleImageLoad = useCallback((index: number) => {
+    setLoadedImages(prev => new Set(prev).add(index))
+  }, [])
+
+  // Обработчик скролла для обновления индикатора
+  const handleScroll = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current
+      const scrollLeft = container.scrollLeft
+      const itemWidth = container.clientWidth
+      const newIndex = Math.round(scrollLeft / itemWidth)
+      setCurrentImageIndex(newIndex)
+    }
+  }, [])
 
   // Определяем домен для внешних изображений
-  const isExternalImage = imageUrl && (
-    imageUrl.startsWith('http://') ||
-    imageUrl.startsWith('https://')
-  )
+  const isExternalImage = (url: string): boolean => {
+    return Boolean(url && (url.startsWith('http://') || url.startsWith('https://')))
+  }
 
   return (
     <div
@@ -55,28 +77,87 @@ export default function ProductCard({
       <Card className="shadow-md hover:shadow-xl transition-shadow duration-300 border-gray-200 hover:border-gray-300 bg-white overflow-hidden flex flex-col h-full min-h-[360px] sm:min-h-[400px] md:min-h-[440px] lg:min-h-[480px]">
         {/* Изображение товара */}
         <div className="relative w-full h-44 sm:h-52 md:h-56 lg:h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-          {imageUrl ? (
+          {hasValidImages ? (
             <>
-              {/* Next.js Image с оптимизацией */}
-              <Image
-                src={imageUrl}
-                alt={product.name}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                className={`object-cover transition-all duration-300 ${
-                  imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-                }`}
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
-                onLoad={() => setImageLoaded(true)}
-                onError={() => setImageError(true)}
-                loading="lazy"
-                unoptimized={isExternalImage ? true : false}
-              />
-              {/* Скелетон пока изображение загружается */}
-              {!imageLoaded && (
-                <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+              {/* Мобильная версия со свайпом (только если есть несколько изображений) */}
+              {hasMultipleImages && (
+                <div className="md:hidden absolute inset-0">
+                  <div
+                    ref={scrollContainerRef}
+                    onScroll={handleScroll}
+                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-full"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
+                    {product.images?.map((imageUrl, index) => {
+                      if (imageErrors.has(index)) return null
+                      return (
+                        <div
+                          key={index}
+                          className="flex-shrink-0 w-full h-full snap-center relative"
+                        >
+                          <Image
+                            src={imageUrl}
+                            alt={`${product.name} - фото ${index + 1}`}
+                            fill
+                            sizes="100vw"
+                            className={`object-cover transition-all duration-300 ${
+                              loadedImages.has(index) ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+                            }`}
+                            placeholder="blur"
+                            blurDataURL={BLUR_DATA_URL}
+                            onLoad={() => handleImageLoad(index)}
+                            onError={() => handleImageError(index)}
+                            loading={index === 0 ? "eager" : "lazy"}
+                            unoptimized={isExternalImage(imageUrl)}
+                          />
+                          {!loadedImages.has(index) && (
+                            <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Индикаторы-точки */}
+                  <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
+                    {product.images?.map((_, index) => {
+                      if (imageErrors.has(index)) return null
+                      return (
+                        <div
+                          key={index}
+                          className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                            index === currentImageIndex
+                              ? 'bg-white w-3 shadow-md'
+                              : 'bg-white/60'
+                          }`}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
               )}
+
+              {/* Десктоп версия или мобильная с одним изображением - показываем первую картинку */}
+              <div className={hasMultipleImages ? 'hidden md:block h-full' : 'h-full'}>
+                <Image
+                  src={validImages[0]}
+                  alt={product.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                  className={`object-cover transition-all duration-300 ${
+                    loadedImages.has(0) ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+                  }`}
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
+                  onLoad={() => handleImageLoad(0)}
+                  onError={() => handleImageError(0)}
+                  loading="lazy"
+                  unoptimized={isExternalImage(validImages[0])}
+                />
+                {!loadedImages.has(0) && (
+                  <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+                )}
+              </div>
             </>
           ) : (
             <div className="flex items-center justify-center h-full">
