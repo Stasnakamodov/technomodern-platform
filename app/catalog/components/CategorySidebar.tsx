@@ -17,7 +17,7 @@ interface Category {
 interface CategorySidebarProps {
   categories: Category[]
   selectedCategoryId: string
-  onCategorySelect: (categoryId: string) => void
+  onCategorySelect: (categoryId: string, closeSidebar?: boolean) => void
 }
 
 const categoryIcons: Record<string, string> = {
@@ -94,7 +94,7 @@ export default function CategorySidebar({
               ? "bg-gray-900 text-white hover:bg-gray-800"
               : "hover:bg-gray-100"
           }`}
-          onClick={() => onCategorySelect('')}
+          onClick={() => onCategorySelect('', true)}
         >
           <Package className="h-5 w-5 mr-3 max-md:h-4 max-md:w-4 max-md:mr-2" />
           <span className="font-semibold max-md:text-sm">Все товары</span>
@@ -123,9 +123,13 @@ export default function CategorySidebar({
                   selectedCategoryId === rootCategory.id ? "bg-gray-100 font-semibold" : ""
                 }`}
                 onClick={() => {
-                  onCategorySelect(rootCategory.id)
                   if (hasSubcategories) {
+                    // Раскрываем подкатегории, выбираем root, но НЕ закрываем сайдбар на мобильных
                     toggleExpanded(rootCategory.id)
+                    onCategorySelect(rootCategory.id, false)
+                  } else {
+                    // Нет подкатегорий — выбираем и закрываем
+                    onCategorySelect(rootCategory.id, true)
                   }
                 }}
               >
@@ -152,7 +156,7 @@ export default function CategorySidebar({
                         className={`w-full justify-start h-10 max-md:h-9 text-sm max-md:text-xs ${
                           isSubSelected ? "bg-gray-100 font-semibold" : "hover:bg-gray-50"
                         }`}
-                        onClick={() => onCategorySelect(subcategory.id)}
+                        onClick={() => onCategorySelect(subcategory.id, true)}
                       >
                         <span className="flex-1 text-left">{subcategory.name}</span>
                         <span className="text-xs text-gray-400">{subcategory.product_count}</span>

@@ -79,7 +79,7 @@ export default function ProductCard({
         <div className="relative w-full h-52 sm:h-52 md:h-56 lg:h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
           {hasValidImages ? (
             <>
-              {/* Мобильная версия со свайпом (только если есть несколько изображений) */}
+              {/* Мобильная версия со свайпом (только если есть несколько валидных изображений) */}
               {hasMultipleImages && (
                 <div className="md:hidden absolute inset-0">
                   <div
@@ -88,29 +88,30 @@ export default function ProductCard({
                     className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-full"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   >
-                    {product.images?.map((imageUrl, index) => {
-                      if (imageErrors.has(index)) return null
+                    {validImages.map((imageUrl, idx) => {
+                      // Находим оригинальный индекс для отслеживания загрузки
+                      const originalIndex = product.images?.indexOf(imageUrl) ?? idx
                       return (
                         <div
-                          key={index}
+                          key={idx}
                           className="flex-shrink-0 w-full h-full snap-center relative"
                         >
                           <Image
                             src={imageUrl}
-                            alt={`${product.name} - фото ${index + 1}`}
+                            alt={`${product.name} - фото ${idx + 1}`}
                             fill
                             sizes="100vw"
                             className={`object-cover transition-all duration-300 ${
-                              loadedImages.has(index) ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+                              loadedImages.has(originalIndex) ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                             }`}
                             placeholder="blur"
                             blurDataURL={BLUR_DATA_URL}
-                            onLoad={() => handleImageLoad(index)}
-                            onError={() => handleImageError(index)}
-                            loading={index === 0 ? "eager" : "lazy"}
+                            onLoad={() => handleImageLoad(originalIndex)}
+                            onError={() => handleImageError(originalIndex)}
+                            loading={idx === 0 ? "eager" : "lazy"}
                             unoptimized={isExternalImage(imageUrl)}
                           />
-                          {!loadedImages.has(index) && (
+                          {!loadedImages.has(originalIndex) && (
                             <div className="absolute inset-0 bg-gray-200 animate-pulse" />
                           )}
                         </div>
@@ -119,21 +120,20 @@ export default function ProductCard({
                   </div>
 
                   {/* Индикаторы-точки */}
-                  <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
-                    {product.images?.map((_, index) => {
-                      if (imageErrors.has(index)) return null
-                      return (
+                  {validImages.length > 1 && (
+                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
+                      {validImages.map((_, idx) => (
                         <div
-                          key={index}
+                          key={idx}
                           className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
-                            index === currentImageIndex
+                            idx === currentImageIndex
                               ? 'bg-white w-3 shadow-md'
                               : 'bg-white/60'
                           }`}
                         />
-                      )
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -195,12 +195,15 @@ export default function CatalogClient({
   }, [router])
 
   // Выбор категории
-  const handleCategorySelect = useCallback((categoryId: string) => {
+  const handleCategorySelect = useCallback((categoryId: string, closeSidebar: boolean = true) => {
     setSelectedCategoryId(categoryId)
     setPage(1)
     updateURL(categoryId, searchQuery, sortBy, sortOrder)
     fetchProducts(categoryId, searchQuery, 1, sortBy, sortOrder, false)
-    setShowCategorySidebar(false)
+    // Закрываем сайдбар только если явно указано (для подкатегорий и root без подкатегорий)
+    if (closeSidebar) {
+      setShowCategorySidebar(false)
+    }
   }, [searchQuery, sortBy, sortOrder, updateURL, fetchProducts])
 
   // Поиск с debounce и отменой предыдущих запросов
