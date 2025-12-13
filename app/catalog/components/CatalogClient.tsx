@@ -484,10 +484,10 @@ export default function CatalogClient({
       {/* Main Content */}
       <div className="max-w-[1920px] mx-auto px-6 py-8 max-md:px-3 max-md:py-4">
         <div className="flex gap-8 max-md:gap-0">
-          {/* Sidebar */}
+          {/* Sidebar - sticky на desktop */}
           <div className={`
             ${showCategorySidebar ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto max-md:p-4' : 'hidden lg:block'}
-            lg:static lg:w-[260px] lg:flex-shrink-0
+            lg:sticky lg:top-16 lg:self-start lg:w-[260px] lg:flex-shrink-0 lg:max-h-[calc(100vh-80px)] lg:overflow-y-auto
           `}>
             {showCategorySidebar && (
               <div className="flex items-center justify-between mb-4 lg:hidden max-md:mb-3">

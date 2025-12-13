@@ -302,6 +302,11 @@ async function handleHelp(message: TelegramMessage) {
 
 async function handleOrders(message: TelegramMessage) {
   const userId = message.from.id;
+  await handleOrdersForUser(message, userId);
+}
+
+// Версия для callback-кнопок (с явным userId)
+async function handleOrdersForUser(message: TelegramMessage, userId: number) {
   const isUserAdmin = await isAdmin(userId);
 
   if (!isUserAdmin) {
@@ -346,6 +351,11 @@ async function handleOrders(message: TelegramMessage) {
 
 async function handleStats(message: TelegramMessage) {
   const userId = message.from.id;
+  await handleStatsForUser(message, userId);
+}
+
+// Версия для callback-кнопок (с явным userId)
+async function handleStatsForUser(message: TelegramMessage, userId: number) {
   const isUserAdmin = await isAdmin(userId);
 
   if (!isUserAdmin) {
@@ -404,20 +414,58 @@ async function handleSetMenu(message: TelegramMessage) {
   }
 }
 
+// ===============================================
+// ПОИСК ПОСТАВЩИКА - УЛУЧШЕННЫЙ ПОШАГОВЫЙ ДИАЛОГ
+// ===============================================
+
+// Типы для данных заявки
+interface SupplierRequestData {
+  description?: string;
+  photoFileId?: string;
+  hasPhoto?: boolean;
+  requestType?: string; // 'text' | 'link' | 'photo'
+  quantity?: string;
+  budget?: string;
+  urgency?: string;
+}
+
+// Варианты количества
+const QUANTITY_OPTIONS = [
+  { text: "1-10 шт", value: "1-10" },
+  { text: "10-100 шт", value: "10-100" },
+  { text: "100-1000 шт", value: "100-1000" },
+  { text: "1000+ шт", value: "1000+" },
+];
+
+// Варианты бюджета
+const BUDGET_OPTIONS = [
+  { text: "до 1 000 ₽", value: "до 1000" },
+  { text: "1-5 тыс ₽", value: "1000-5000" },
+  { text: "5-20 тыс ₽", value: "5000-20000" },
+  { text: "20+ тыс ₽", value: "20000+" },
+];
+
+// Варианты срочности
+const URGENCY_OPTIONS = [
+  { text: "🔥 Срочно (1-3 дня)", value: "urgent" },
+  { text: "📅 Неделя", value: "week" },
+  { text: "📆 Месяц", value: "month" },
+  { text: "🕐 Не важно", value: "any" },
+];
+
 // Обработчик "Найти поставщика" - главная функция бота
 async function handleFindSupplier(message: TelegramMessage) {
   await setState(message.from.id, "find_supplier", "description", {});
 
-  const text = `<b>🔍 Поиск поставщика</b>\n\n`;
-  const fullText = text +
+  const text = `<b>🔍 Поиск поставщика</b>\n\n` +
     `Опишите товар, который хотите найти:\n\n` +
-    `📝 <i>Например: "iPhone 15 Pro Max 256GB чёрный" или "Кроссовки Nike Air Max 90"</i>\n\n` +
+    `📝 <i>Например: "iPhone 15 Pro Max 256GB" или "Кроссовки Nike Air Max 90"</i>\n\n` +
     `💡 <b>Совет:</b> Чем подробнее опишете — тем точнее найдём!\n\n` +
     `Также можете:\n` +
     `• 📎 Прикрепить фото товара\n` +
     `• 🔗 Отправить ссылку с маркетплейса`;
 
-  await sendMessage(message.chat.id, fullText, {
+  await sendMessage(message.chat.id, text, {
     reply_markup: {
       inline_keyboard: [
         [{ text: "❌ Отмена", callback_data: "cancel_request" }],
@@ -425,6 +473,192 @@ async function handleFindSupplier(message: TelegramMessage) {
       ],
     },
   });
+}
+
+// ШАГ 2: Спрашиваем количество
+async function askQuantity(chatId: number) {
+  const text = `<b>📦 Какое количество вам нужно?</b>\n\n` +
+    `Выберите примерный объём или введите точное число:`;
+
+  const keyboard = [
+    QUANTITY_OPTIONS.slice(0, 2).map(opt => ({ text: opt.text, callback_data: `qty_${opt.value}` })),
+    QUANTITY_OPTIONS.slice(2, 4).map(opt => ({ text: opt.text, callback_data: `qty_${opt.value}` })),
+    [{ text: "▶️ Пропустить", callback_data: "qty_skip" }],
+    [{ text: "❌ Отмена", callback_data: "cancel_request" }]
+  ];
+
+  await sendMessage(chatId, text, {
+    reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+// ШАГ 3: Спрашиваем бюджет
+async function askBudget(chatId: number) {
+  const text = `<b>💰 Какой у вас бюджет за единицу товара?</b>\n\n` +
+    `Выберите диапазон или введите сумму:`;
+
+  const keyboard = [
+    BUDGET_OPTIONS.slice(0, 2).map(opt => ({ text: opt.text, callback_data: `budget_${opt.value}` })),
+    BUDGET_OPTIONS.slice(2, 4).map(opt => ({ text: opt.text, callback_data: `budget_${opt.value}` })),
+    [{ text: "▶️ Пропустить", callback_data: "budget_skip" }],
+    [{ text: "❌ Отмена", callback_data: "cancel_request" }]
+  ];
+
+  await sendMessage(chatId, text, {
+    reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+// ШАГ 4: Спрашиваем срочность
+async function askUrgency(chatId: number) {
+  const text = `<b>⏰ Насколько срочно нужен товар?</b>`;
+
+  const keyboard = [
+    URGENCY_OPTIONS.slice(0, 2).map(opt => ({ text: opt.text, callback_data: `urgency_${opt.value}` })),
+    URGENCY_OPTIONS.slice(2, 4).map(opt => ({ text: opt.text, callback_data: `urgency_${opt.value}` })),
+    [{ text: "❌ Отмена", callback_data: "cancel_request" }]
+  ];
+
+  await sendMessage(chatId, text, {
+    reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+// ШАГ 5: Показываем подтверждение
+async function showConfirmation(chatId: number, data: SupplierRequestData) {
+  const urgencyLabels: Record<string, string> = {
+    urgent: "🔥 Срочно (1-3 дня)",
+    week: "📅 В течение недели",
+    month: "📆 В течение месяца",
+    any: "🕐 Не важно",
+    skip: "Не указано"
+  };
+
+  let text = `<b>📋 Проверьте вашу заявку:</b>\n\n`;
+  text += `<b>📦 Товар:</b>\n${data.description}\n\n`;
+
+  if (data.hasPhoto) {
+    text += `📷 <i>+ фото товара</i>\n\n`;
+  }
+
+  text += `<b>📊 Количество:</b> ${data.quantity || 'Не указано'}\n`;
+  text += `<b>💰 Бюджет:</b> ${data.budget ? data.budget + ' ₽' : 'Не указан'}\n`;
+  text += `<b>⏰ Срочность:</b> ${urgencyLabels[data.urgency || 'skip'] || data.urgency}\n\n`;
+  text += `Всё верно? Отправляем заявку?`;
+
+  const keyboard = [
+    [
+      { text: "✅ Отправить", callback_data: "confirm_supplier_request" },
+      { text: "✏️ Изменить", callback_data: "find_supplier" }
+    ],
+    [{ text: "❌ Отмена", callback_data: "cancel_request" }]
+  ];
+
+  await sendMessage(chatId, text, {
+    reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+// Сохранение заявки и уведомление админов
+async function saveAndNotifySupplierRequest(
+  userId: number,
+  userName: string,
+  username: string,
+  chatId: number,
+  data: SupplierRequestData
+) {
+  const urgencyLabels: Record<string, string> = {
+    urgent: "🔥 Срочно",
+    week: "📅 Неделя",
+    month: "📆 Месяц",
+    any: "🕐 Не важно"
+  };
+
+  // Формируем дополнительные данные для поля message
+  const additionalInfo: string[] = [];
+  if (data.quantity && data.quantity !== 'skip') additionalInfo.push(`Количество: ${data.quantity}`);
+  if (data.budget && data.budget !== 'skip') additionalInfo.push(`Бюджет: ${data.budget} ₽`);
+  if (data.urgency && data.urgency !== 'skip') additionalInfo.push(`Срочность: ${urgencyLabels[data.urgency] || data.urgency}`);
+
+  const messageField = data.hasPhoto
+    ? `[ФОТО] ${data.description}${additionalInfo.length ? '\n\n' + additionalInfo.join('\n') : ''}`
+    : `${data.description}${additionalInfo.length ? '\n\n' + additionalInfo.join('\n') : ''}`;
+
+  // Сохраняем заявку в БД
+  const { data: newRequest, error } = await supabase
+    .from("orders")
+    .insert({
+      customer_name: userName,
+      customer_phone: username,
+      product_name: data.description?.slice(0, 200) || 'Запрос на поиск',
+      telegram_id: userId,
+      status: "new",
+      source: "telegram_supplier_search",
+      message: messageField,
+      quantity: data.quantity && data.quantity !== 'skip' ? parseInt(data.quantity.split('-')[0]) || 1 : null,
+      target_price: data.budget && data.budget !== 'skip' ? parseInt(data.budget.replace(/\D/g, '')) || null : null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating supplier request:", error);
+    await sendMessage(chatId,
+      "❌ Произошла ошибка. Попробуйте позже или напишите нам напрямую @technomodern_support");
+    return null;
+  }
+
+  // Подтверждение пользователю
+  await sendMessage(chatId,
+    `✅ <b>Заявка принята!</b>\n\n` +
+    `📋 Номер: #${newRequest.id.slice(0, 8)}\n\n` +
+    `Мы найдём поставщика и свяжемся с вами в Telegram!\n\n` +
+    `⏱ Обычно отвечаем в течение 2-4 часов.`,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🔍 Новый поиск", callback_data: "find_supplier" }],
+          [{ text: "« Главное меню", callback_data: "main_menu" }]
+        ]
+      }
+    }
+  );
+
+  // Уведомление админам
+  let adminText = `🔔 <b>Новый запрос на поиск!</b>\n\n`;
+  adminText += `👤 ${userName} (${username})\n`;
+  adminText += `🆔 Telegram ID: ${userId}\n`;
+  adminText += `📝 Тип: ${data.requestType || 'текст'}\n\n`;
+  adminText += `<b>📦 Товар:</b>\n${data.description}\n\n`;
+
+  if (data.quantity && data.quantity !== 'skip') {
+    adminText += `<b>📊 Количество:</b> ${data.quantity}\n`;
+  }
+  if (data.budget && data.budget !== 'skip') {
+    adminText += `<b>💰 Бюджет:</b> ${data.budget} ₽\n`;
+  }
+  if (data.urgency && data.urgency !== 'skip') {
+    adminText += `<b>⏰ Срочность:</b> ${urgencyLabels[data.urgency] || data.urgency}\n`;
+  }
+
+  adminText += `\n#${newRequest.id.slice(0, 8)}`;
+
+  if (data.hasPhoto && data.photoFileId) {
+    await forwardPhotoToAdmins(data.photoFileId, adminText);
+  } else {
+    const { data: admins } = await supabase
+      .from("admin_users")
+      .select("telegram_id")
+      .eq("is_active", true);
+
+    if (admins) {
+      for (const admin of admins) {
+        await sendMessage(admin.telegram_id, adminText);
+      }
+    }
+  }
+
+  return newRequest;
 }
 
 // Обработчик "Связаться с нами" - простая форма обратной связи
@@ -475,11 +709,74 @@ async function handleCallbackQuery(callbackQuery: CallbackQuery) {
     await clearState(from.id);
     await sendMessage(message.chat.id, "✅ Запрос отменён.\n\nНажмите /start чтобы вернуться в главное меню.");
 
+  // === ПОШАГОВЫЙ ДИАЛОГ: КОЛИЧЕСТВО ===
+  } else if (data.startsWith("qty_")) {
+    const state = await getState(from.id);
+    if (state && state.state === "find_supplier") {
+      const stateData = state.data || {};
+      const quantity = data.replace("qty_", "");
+      stateData.quantity = quantity === "skip" ? undefined : quantity;
+      await setState(from.id, "find_supplier", "budget", stateData);
+      await askBudget(message.chat.id);
+    }
+
+  // === ПОШАГОВЫЙ ДИАЛОГ: БЮДЖЕТ ===
+  } else if (data.startsWith("budget_")) {
+    const state = await getState(from.id);
+    if (state && state.state === "find_supplier") {
+      const stateData = state.data || {};
+      const budget = data.replace("budget_", "");
+      stateData.budget = budget === "skip" ? undefined : budget;
+      await setState(from.id, "find_supplier", "urgency", stateData);
+      await askUrgency(message.chat.id);
+    }
+
+  // === ПОШАГОВЫЙ ДИАЛОГ: СРОЧНОСТЬ ===
+  } else if (data.startsWith("urgency_")) {
+    const state = await getState(from.id);
+    if (state && state.state === "find_supplier") {
+      const stateData = state.data || {};
+      const urgency = data.replace("urgency_", "");
+      stateData.urgency = urgency;
+      await setState(from.id, "find_supplier", "confirm", stateData);
+      await showConfirmation(message.chat.id, stateData as SupplierRequestData);
+    }
+
+  // === БЫСТРАЯ ОТПРАВКА ФОТО ===
+  } else if (data === "quick_send") {
+    const state = await getState(from.id);
+    if (state && state.state === "find_supplier" && state.data) {
+      const stateData = state.data as SupplierRequestData;
+      const userName = from.first_name + (from.last_name ? ` ${from.last_name}` : '');
+      const username = from.username ? `@${from.username}` : 'нет username';
+      await saveAndNotifySupplierRequest(from.id, userName, username, message.chat.id, stateData);
+      await clearState(from.id);
+    }
+
+  // === РЕЖИМ УТОЧНЕНИЯ ДЕТАЛЕЙ ===
+  } else if (data === "details_mode") {
+    const state = await getState(from.id);
+    if (state && state.state === "find_supplier") {
+      await setState(from.id, "find_supplier", "quantity", state.data || {});
+      await askQuantity(message.chat.id);
+    }
+
+  // === ПОДТВЕРЖДЕНИЕ ЗАЯВКИ ===
+  } else if (data === "confirm_supplier_request") {
+    const state = await getState(from.id);
+    if (state && state.state === "find_supplier" && state.data) {
+      const stateData = state.data as SupplierRequestData;
+      const userName = from.first_name + (from.last_name ? ` ${from.last_name}` : '');
+      const username = from.username ? `@${from.username}` : 'нет username';
+      await saveAndNotifySupplierRequest(from.id, userName, username, message.chat.id, stateData);
+      await clearState(from.id);
+    }
+
   // === АДМИНСКИЕ КНОПКИ ===
   } else if (data === "admin_orders") {
-    await handleOrders(message);
+    await handleOrdersForUser(message, from.id);
   } else if (data === "admin_stats") {
-    await handleStats(message);
+    await handleStatsForUser(message, from.id);
 
   // === УСТАРЕВШИЕ (для совместимости) ===
   } else if (data === "new_order") {
@@ -639,11 +936,11 @@ async function handleMessage(message: TelegramMessage) {
   const userName = message.from.first_name + (message.from.last_name ? ` ${message.from.last_name}` : '');
   const username = message.from.username ? `@${message.from.username}` : 'нет username';
 
-  // === СОСТОЯНИЕ: Поиск поставщика ===
+  // === СОСТОЯНИЕ: Поиск поставщика (УЛУЧШЕННЫЙ ПОШАГОВЫЙ ДИАЛОГ) ===
   if (state && state.state === "find_supplier") {
-    const data = state.data || {};
+    const stateData = (state.data || {}) as SupplierRequestData;
 
-    // Получили описание товара (текст, ссылка или фото)
+    // ШАГ 1: Получили описание товара (текст, ссылка или фото)
     if (state.step === "description") {
       let productDescription = message.text || '';
       let hasPhoto = false;
@@ -652,7 +949,6 @@ async function handleMessage(message: TelegramMessage) {
       // Проверяем наличие фото
       if (message.photo && message.photo.length > 0) {
         hasPhoto = true;
-        // Берём фото максимального размера
         photoFileId = message.photo[message.photo.length - 1].file_id;
         productDescription = message.text || '(фото без описания)';
       }
@@ -667,70 +963,71 @@ async function handleMessage(message: TelegramMessage) {
       if (hasPhoto) requestType = 'фото';
       else if (productDescription.includes('http')) requestType = 'ссылка';
 
-      // Сохраняем заявку в БД
-      const { data: newRequest, error } = await supabase
-        .from("orders")
-        .insert({
-          customer_name: userName,
-          customer_phone: username, // Используем username вместо телефона
-          product_name: productDescription,
-          telegram_id: userId,
-          status: "new",
-          source: "telegram_supplier_search",
-          message: hasPhoto ? `[ФОТО] ${productDescription}` : productDescription
-        })
-        .select()
-        .single();
+      // Сохраняем данные в состояние
+      stateData.description = productDescription;
+      stateData.hasPhoto = hasPhoto;
+      stateData.photoFileId = photoFileId;
+      stateData.requestType = requestType;
 
-      if (error) {
-        console.error("Error creating supplier request:", error);
-        await sendMessage(message.chat.id,
-          "❌ Произошла ошибка. Попробуйте позже или напишите нам напрямую @technomodern_support");
+      // Если фото - предлагаем выбор: быстрая отправка или уточнение деталей
+      if (hasPhoto) {
+        await setState(userId, "find_supplier", "photo_choice", stateData);
+
+        const text = `📷 <b>Фото получено!</b>\n\n` +
+          `${productDescription !== '(фото без описания)' ? `📝 ${productDescription}\n\n` : ''}` +
+          `Как хотите продолжить?`;
+
+        await sendMessage(message.chat.id, text, {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "⚡ Отправить сразу", callback_data: "quick_send" }],
+              [{ text: "📝 Уточнить детали", callback_data: "details_mode" }],
+              [{ text: "❌ Отмена", callback_data: "cancel_request" }]
+            ]
+          }
+        });
       } else {
-        // Подтверждение пользователю
-        await sendMessage(message.chat.id,
-          `✅ <b>Заявка принята!</b>\n\n` +
-          `📋 Номер: #${newRequest.id.slice(0, 8)}\n` +
-          `📝 Запрос: ${productDescription.slice(0, 100)}${productDescription.length > 100 ? '...' : ''}\n\n` +
-          `Мы найдём поставщика и свяжемся с вами в Telegram!\n\n` +
-          `⏱ Обычно отвечаем в течение 2-4 часов.`,
-          {
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: "🔍 Новый поиск", callback_data: "find_supplier" }],
-                [{ text: "« Главное меню", callback_data: "main_menu" }]
-              ]
-            }
-          }
-        );
-
-        // Уведомление админам
-        const adminText = `🔔 <b>Новый запрос на поиск!</b>\n\n` +
-          `👤 ${userName} (${username})\n` +
-          `🆔 Telegram ID: ${userId}\n` +
-          `📝 Тип: ${requestType}\n\n` +
-          `<b>Запрос:</b>\n${productDescription}\n\n` +
-          `#${newRequest.id.slice(0, 8)}`;
-
-        if (hasPhoto) {
-          await forwardPhotoToAdmins(photoFileId, adminText);
-        } else {
-          const { data: admins } = await supabase
-            .from("admin_users")
-            .select("telegram_id")
-            .eq("is_active", true);
-
-          if (admins) {
-            for (const admin of admins) {
-              await sendMessage(admin.telegram_id, adminText);
-            }
-          }
-        }
+        // Для текста/ссылки - переходим к вопросам
+        await setState(userId, "find_supplier", "quantity", stateData);
+        await askQuantity(message.chat.id);
       }
-
-      await clearState(userId);
       return;
     }
+
+    // ШАГ 2: Ввод своего количества (если не нажали кнопку)
+    if (state.step === "quantity") {
+      const inputText = message.text?.trim();
+      if (inputText) {
+        // Проверяем, что это число
+        const num = parseInt(inputText.replace(/\D/g, ''));
+        if (num > 0) {
+          stateData.quantity = num.toString();
+        } else {
+          stateData.quantity = inputText; // Сохраняем как есть
+        }
+        await setState(userId, "find_supplier", "budget", stateData);
+        await askBudget(message.chat.id);
+      }
+      return;
+    }
+
+    // ШАГ 3: Ввод своего бюджета (если не нажали кнопку)
+    if (state.step === "budget") {
+      const inputText = message.text?.trim();
+      if (inputText) {
+        const num = parseInt(inputText.replace(/\D/g, ''));
+        if (num > 0) {
+          stateData.budget = num.toString();
+        } else {
+          stateData.budget = inputText;
+        }
+        await setState(userId, "find_supplier", "urgency", stateData);
+        await askUrgency(message.chat.id);
+      }
+      return;
+    }
+
+    // Остальные шаги обрабатываются через callback-кнопки
   }
 
   // === СОСТОЯНИЕ: Связаться с нами ===
