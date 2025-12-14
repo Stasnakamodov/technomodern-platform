@@ -267,8 +267,9 @@ async function fetchCategoriesFromDB(): Promise<Category[]> {
   // Fallback: прямой запрос
   const { data, error } = await supabaseServer
     .from('categories')
-    .select('id, name, slug, icon, parent_id, level, product_count')
+    .select('id, name, slug, icon, parent_id, level, display_order, product_count')
     .order('level')
+    .order('display_order')
     .order('name')
 
   if (error) {
