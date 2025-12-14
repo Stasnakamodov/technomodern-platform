@@ -119,7 +119,8 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
       const res = await fetch('/api/admin/categories')
       if (res.ok) {
         const data = await res.json()
-        setCategories(data.categories || [])
+        // API возвращает массив напрямую
+        setCategories(Array.isArray(data) ? data : (data.categories || []))
       }
     } catch (error) {
       console.error('Error loading categories:', error)
