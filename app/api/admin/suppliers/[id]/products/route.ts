@@ -11,7 +11,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  console.log('Products API called')
+
   const isAuthed = await checkAdminAuth()
+  console.log('Auth check result:', isAuthed)
+
   if (!isAuthed) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
