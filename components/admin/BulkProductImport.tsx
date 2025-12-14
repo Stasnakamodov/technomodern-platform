@@ -176,12 +176,22 @@ const SLUG_TO_CATEGORIES: Record<string, string[]> = {
   wrench: ['tools'],
 
   // Красота и здоровье
+  beauty: ['health-beauty', 'cosmetics', 'skincare'],
+  health: ['health-beauty', 'vitamins', 'hygiene'],
   cosmetic: ['cosmetics', 'health-beauty'],
   makeup: ['cosmetics', 'health-beauty'],
   skincare: ['skincare', 'health-beauty', 'cosmetics'],
   cream: ['skincare', 'cosmetics', 'health-beauty'],
   vitamin: ['vitamins', 'health-beauty'],
   supplement: ['vitamins', 'health-beauty'],
+  hair: ['health-beauty', 'cosmetics', 'hygiene'],
+  dryer: ['health-beauty', 'home'],
+  styler: ['health-beauty', 'cosmetics'],
+  dyson: ['health-beauty', 'home'],
+  shampoo: ['cosmetics', 'health-beauty', 'hygiene'],
+  hygiene: ['hygiene', 'health-beauty'],
+  soap: ['hygiene', 'health-beauty', 'household-goods'],
+  toothbrush: ['hygiene', 'health-beauty'],
 
   // Текстиль
   textile: ['textiles', 'home'],
