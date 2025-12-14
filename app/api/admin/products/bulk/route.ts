@@ -32,6 +32,7 @@ interface ImportResult {
   created: Array<{ id: string; name: string }>
   createdCategories: string[]
   createdSuppliers: string[]
+  linkedToExisting: number // Товары, привязанные к существующим (от других поставщиков)
 }
 
 // POST - массовая загрузка товаров
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
         autoCreateCategories?: boolean
         autoCreateSuppliers?: boolean
         updateExisting?: boolean
+        linkToExisting?: boolean // Привязывать к существующим товарам (для разных поставщиков)
       }
     }
 
@@ -65,6 +67,7 @@ export async function POST(request: NextRequest) {
       autoCreateCategories: options?.autoCreateCategories ?? false,
       autoCreateSuppliers: options?.autoCreateSuppliers ?? false,
       updateExisting: options?.updateExisting ?? false,
+      linkToExisting: options?.linkToExisting ?? true, // По умолчанию привязываем к существующим
     }
 
     // Загружаем справочники
@@ -104,7 +107,20 @@ export async function POST(request: NextRequest) {
       created: [],
       createdCategories: [],
       createdSuppliers: [],
+      linkedToExisting: 0,
     }
+
+    // Загружаем существующие товары для поиска дубликатов по названию
+    const { data: allProducts } = await supabase
+      .from('products')
+      .select('id, name, sku, price')
+
+    const existingProductsByName = new Map<string, { id: string; price: number }>()
+    ;(allProducts || []).forEach(p => {
+      // Нормализуем название для сравнения
+      const normalizedName = normalizeProductName(p.name)
+      existingProductsByName.set(normalizedName, { id: p.id, price: p.price })
+    })
 
     // Обрабатываем каждый товар
     for (let i = 0; i < products.length; i++) {
@@ -126,27 +142,65 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        // Проверка дубликата по SKU
         const sku = product.sku?.trim() || null
-        if (sku && existingSkus.has(sku.toLowerCase())) {
-          if (opts.updateExisting) {
-            // Обновляем существующий товар
-            const existingId = existingSkus.get(sku.toLowerCase())!
-            const updateData = await prepareProductData(
-              product, price, sku, categoriesMap, categoriesByName, suppliersMap, opts, result
-            )
+        const normalizedName = normalizeProductName(String(product.name))
 
+        // Подготавливаем данные товара
+        const productData = await prepareProductData(
+          product, price, sku, categoriesMap, categoriesByName, suppliersMap, opts, result
+        )
+
+        // Определяем поставщика для связи
+        let supplierId = productData.supplier_id
+
+        // Проверяем, существует ли такой товар по названию
+        const existingByName = existingProductsByName.get(normalizedName)
+
+        // Также проверяем по SKU
+        const existingBySku = sku ? existingSkus.get(sku.toLowerCase()) : null
+
+        if (existingByName && opts.linkToExisting && supplierId) {
+          // Товар с таким названием уже есть - привязываем поставщика
+          const linked = await linkProductToSupplier(
+            existingByName.id,
+            supplierId,
+            price,
+            sku,
+            productData.in_stock,
+            productData.min_order
+          )
+
+          if (linked) {
+            // Обновляем лучшую цену товара
+            await updateProductBestPrice(existingByName.id)
+            result.linkedToExisting++
+            result.success++
+          } else {
+            result.errors.push({ row, message: 'Ошибка привязки к существующему товару', data: product })
+            result.failed++
+          }
+          continue
+        }
+
+        if (existingBySku) {
+          // Дубликат по SKU
+          if (opts.updateExisting) {
             const { error } = await supabase
               .from('products')
-              .update({ ...updateData, updated_at: new Date().toISOString() })
-              .eq('id', existingId)
+              .update({ ...productData, updated_at: new Date().toISOString() })
+              .eq('id', existingBySku)
 
             if (error) {
               result.errors.push({ row, message: `Ошибка обновления: ${error.message}`, data: product })
               result.failed++
             } else {
+              // Добавляем связь с поставщиком
+              if (supplierId) {
+                await linkProductToSupplier(existingBySku, supplierId, price, sku, productData.in_stock, productData.min_order)
+                await updateProductBestPrice(existingBySku)
+              }
               result.success++
-              result.created.push({ id: existingId, name: String(product.name) })
+              result.created.push({ id: existingBySku, name: String(product.name) })
             }
             continue
           } else if (opts.skipDuplicates) {
@@ -159,12 +213,7 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Подготавливаем данные товара
-        const productData = await prepareProductData(
-          product, price, sku, categoriesMap, categoriesByName, suppliersMap, opts, result
-        )
-
-        // Вставляем товар
+        // Создаём новый товар
         const { data: insertedProduct, error } = await supabase
           .from('products')
           .insert(productData)
@@ -177,7 +226,15 @@ export async function POST(request: NextRequest) {
         } else {
           result.success++
           result.created.push(insertedProduct)
+
+          // Запоминаем для следующих итераций
           if (sku) existingSkus.set(sku.toLowerCase(), insertedProduct.id)
+          existingProductsByName.set(normalizedName, { id: insertedProduct.id, price })
+
+          // Добавляем связь с поставщиком
+          if (supplierId) {
+            await linkProductToSupplier(insertedProduct.id, supplierId, price, sku, productData.in_stock, productData.min_order)
+          }
         }
       } catch (err: any) {
         result.errors.push({ row, message: err.message || 'Неизвестная ошибка', data: product })
@@ -358,4 +415,78 @@ function slugify(text: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .slice(0, 100)
+}
+
+// Нормализация названия для сравнения (убираем пробелы, регистр, спецсимволы)
+function normalizeProductName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-zа-яё0-9]/gi, '') // Убираем всё кроме букв и цифр
+    .trim()
+}
+
+// Добавление связи товар-поставщик
+async function linkProductToSupplier(
+  productId: string,
+  supplierId: string,
+  supplierPrice: number,
+  supplierSku: string | null,
+  inStock: boolean,
+  minOrder: number
+): Promise<boolean> {
+  // Проверяем, нет ли уже такой связи
+  const { data: existing } = await supabase
+    .from('product_suppliers')
+    .select('id, supplier_price')
+    .eq('product_id', productId)
+    .eq('supplier_id', supplierId)
+    .single()
+
+  if (existing) {
+    // Обновляем существующую связь
+    const { error } = await supabase
+      .from('product_suppliers')
+      .update({
+        supplier_price: supplierPrice,
+        supplier_sku: supplierSku,
+        in_stock: inStock,
+        min_order: minOrder,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', existing.id)
+
+    return !error
+  }
+
+  // Создаём новую связь
+  const { error } = await supabase
+    .from('product_suppliers')
+    .insert({
+      product_id: productId,
+      supplier_id: supplierId,
+      supplier_price: supplierPrice,
+      supplier_sku: supplierSku,
+      in_stock: inStock,
+      min_order: minOrder
+    })
+
+  return !error
+}
+
+// Обновление основной цены товара (минимальная из всех поставщиков)
+async function updateProductBestPrice(productId: string): Promise<void> {
+  const { data: suppliers } = await supabase
+    .from('product_suppliers')
+    .select('supplier_price')
+    .eq('product_id', productId)
+    .eq('in_stock', true)
+    .order('supplier_price', { ascending: true })
+    .limit(1)
+
+  if (suppliers && suppliers.length > 0) {
+    await supabase
+      .from('products')
+      .update({ price: suppliers[0].supplier_price })
+      .eq('id', productId)
+  }
 }

@@ -57,6 +57,7 @@ interface ImportResult {
   created: Array<{ id: string; name: string }>
   createdCategories: string[]
   createdSuppliers: string[]
+  linkedToExisting: number // Количество товаров, привязанных к существующим
 }
 
 interface BulkProductImportProps {
@@ -98,6 +99,7 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
     autoCreateCategories: false,
     autoCreateSuppliers: false,
     updateExisting: false,
+    linkToExisting: true, // Привязывать товары от разных поставщиков к одному товару
   })
 
   // Прогресс импорта
@@ -857,6 +859,24 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
                   </div>
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={options.linkToExisting}
+                    onChange={(e) => setOptions(prev => ({ ...prev, linkToExisting: e.target.checked }))}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm">🔗 Объединять одинаковые товары</span>
+                </label>
+                <div className="group relative">
+                  <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-w-xs z-50 shadow-lg">
+                    Если товар с таким названием уже есть — привязать нового поставщика к нему вместо создания дубликата. Цена товара = минимальная из всех поставщиков.
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+                  </div>
+                </div>
+              </div>
             </div>
           </Card>
 
@@ -1037,7 +1057,7 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
       {step === 'result' && importResult && (
         <>
           {/* Result Stats */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-100 rounded-lg">
@@ -1049,6 +1069,19 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
                 </div>
               </div>
             </Card>
+            {importResult.linkedToExisting > 0 && (
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <span className="text-blue-600 text-lg">🔗</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-blue-600">{importResult.linkedToExisting}</p>
+                    <p className="text-sm text-gray-500">Привязано</p>
+                  </div>
+                </div>
+              </Card>
+            )}
             <Card className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-yellow-100 rounded-lg">
