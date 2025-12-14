@@ -167,6 +167,117 @@ function findSimilarCategories(
     .map(s => s.category)
 }
 
+// Словарь ключевых слов для семантической проверки соответствия товар ↔ категория
+// Формат: regex pattern → массив подходящих категорий (slug)
+const PRODUCT_CATEGORY_RULES: Array<{ pattern: RegExp; expectedCategories: string[] }> = [
+  // Обувь и одежда
+  { pattern: /кроссовк|кед[ыи]|ботинк|туфл|сандал|обув|nike|adidas|puma|reebok|new balance/i, expectedCategories: ['clothing', 'footwear', 'sportswear', 'fashion'] },
+  { pattern: /футболк|майк|рубашк|джинс|брюк|штан|куртк|пальто|плащ|свитер|толстовк/i, expectedCategories: ['clothing', 'fashion', 'sportswear'] },
+
+  // Электроника
+  { pattern: /смартфон|телефон|iphone|айфон|samsung|xiaomi|huawei|realme|poco|redmi|galaxy/i, expectedCategories: ['electronics', 'smartphones', 'mobile', 'gadgets'] },
+  { pattern: /ноутбук|laptop|macbook|компьютер|пк|pc|imac/i, expectedCategories: ['electronics', 'computers', 'laptops', 'gadgets'] },
+  { pattern: /планшет|tablet|ipad|айпад/i, expectedCategories: ['electronics', 'tablets', 'gadgets'] },
+  { pattern: /наушник|airpods|headphone|earbuds|гарнитур/i, expectedCategories: ['electronics', 'audio', 'headphones', 'gadgets', 'accessories'] },
+  { pattern: /телевизор|tv|монитор|display|дисплей/i, expectedCategories: ['electronics', 'tv', 'monitors', 'displays'] },
+  { pattern: /камер|фотоаппарат|gopro|видеокамер/i, expectedCategories: ['electronics', 'cameras', 'photo', 'video'] },
+
+  // Бытовая техника
+  { pattern: /пылесос|робот.?пылесос|roborock|dyson|xiaomi.*vacuum/i, expectedCategories: ['home-appliances', 'smart-home', 'vacuum', 'home'] },
+  { pattern: /холодильник|морозильник/i, expectedCategories: ['home-appliances', 'kitchen', 'refrigerators'] },
+  { pattern: /стиральн|washer|washing/i, expectedCategories: ['home-appliances', 'laundry'] },
+  { pattern: /кофемашин|кофеварк|coffee|эспрессо/i, expectedCategories: ['home-appliances', 'kitchen', 'tableware', 'coffee'] },
+  { pattern: /чайник|kettle/i, expectedCategories: ['home-appliances', 'kitchen', 'tableware'] },
+  { pattern: /микроволнов|свч/i, expectedCategories: ['home-appliances', 'kitchen'] },
+  { pattern: /блендер|миксер|кухонн.*комбайн/i, expectedCategories: ['home-appliances', 'kitchen', 'tableware'] },
+
+  // Автотовары
+  { pattern: /масло.*мотор|моторн.*масло|5w|10w|синтетик.*масло/i, expectedCategories: ['auto-chemicals', 'automotive', 'oils'] },
+  { pattern: /антифриз|тосол|охлаждающ/i, expectedCategories: ['auto-chemicals', 'automotive'] },
+  { pattern: /омыват|стеклоомыват/i, expectedCategories: ['auto-chemicals', 'automotive'] },
+  { pattern: /автошампун|автохими|присадк/i, expectedCategories: ['auto-chemicals', 'automotive'] },
+  { pattern: /шин[аы]|покрышк|колес[оа]|диск.*авто|r1[4-9]|r2[0-2]/i, expectedCategories: ['tires', 'automotive', 'wheels'] },
+
+  // Мебель
+  { pattern: /диван|кресл|софа|пуф/i, expectedCategories: ['furniture', 'living-room', 'home'] },
+  { pattern: /стол(?!овые)|стул|табурет/i, expectedCategories: ['furniture', 'dining', 'home', 'office'] },
+  { pattern: /кровать|матрас|подушк.*сп/i, expectedCategories: ['furniture', 'bedroom', 'home'] },
+  { pattern: /шкаф|комод|тумб|стеллаж|полк[аи]/i, expectedCategories: ['furniture', 'storage', 'home'] },
+
+  // Инструменты
+  { pattern: /дрель|шуруповёрт|шуруповерт|перфоратор/i, expectedCategories: ['tools', 'power-tools', 'industrial'] },
+  { pattern: /пил[аы]|лобзик|болгарк|ушм/i, expectedCategories: ['tools', 'power-tools', 'industrial'] },
+  { pattern: /молоток|отвёртк|отвертк|ключ.*гаечн|плоскогубц|пассатиж/i, expectedCategories: ['tools', 'hand-tools'] },
+
+  // Сантехника
+  { pattern: /смесител|кран|душ.*лейк|унитаз|раковин|ванн[аы]/i, expectedCategories: ['plumbing', 'bathroom', 'home'] },
+
+  // Косметика и уход
+  { pattern: /крем.*лиц|сыворотк|маск.*лиц|тонер|лосьон/i, expectedCategories: ['cosmetics', 'skincare', 'beauty'] },
+  { pattern: /шампун|бальзам.*волос|кондиционер.*волос/i, expectedCategories: ['cosmetics', 'haircare', 'beauty', 'hygiene'] },
+  { pattern: /помад|тушь|тени|румян|пудр/i, expectedCategories: ['cosmetics', 'makeup', 'beauty'] },
+
+  // Еда и напитки
+  { pattern: /кофе(?!машин)|чай(?!ник)|шоколад|конфет|печень/i, expectedCategories: ['food', 'drinks', 'grocery'] },
+
+  // Спорт
+  { pattern: /гантел|штанг|тренажёр|тренажер|фитнес|йога.*коврик/i, expectedCategories: ['sports', 'fitness', 'gym'] },
+  { pattern: /велосипед|самокат|ролик|скейт/i, expectedCategories: ['sports', 'cycling', 'outdoor'] },
+
+  // Детские товары
+  { pattern: /детск|игрушк|коляск|подгузник|памперс|соск[аи]/i, expectedCategories: ['kids', 'toys', 'baby', 'children'] },
+
+  // Зоотовары
+  { pattern: /корм.*соб|корм.*кош|собач|кошач|для.*питом/i, expectedCategories: ['pets', 'pet-food', 'animals'] },
+]
+
+// Тип состояния валидации категории
+type CategoryValidationStatus = 'valid' | 'warning' | 'invalid'
+
+// Проверка семантического соответствия названия товара и категории
+function checkCategoryMatch(
+  productName: string,
+  categorySlug: string | undefined,
+  validSlugs: Set<string>
+): { status: CategoryValidationStatus; suggestedCategories: string[] } {
+  // Если категория не указана — просто валидно (нет что проверять)
+  if (!categorySlug) {
+    return { status: 'valid', suggestedCategories: [] }
+  }
+
+  const slugLower = categorySlug.toLowerCase()
+
+  // Если категория не существует — invalid (красный)
+  if (!validSlugs.has(slugLower)) {
+    return { status: 'invalid', suggestedCategories: [] }
+  }
+
+  // Категория существует — проверяем семантическое соответствие
+  const nameLower = productName.toLowerCase()
+
+  for (const rule of PRODUCT_CATEGORY_RULES) {
+    if (rule.pattern.test(nameLower)) {
+      // Нашли правило для этого товара
+      const expectedSlugs = rule.expectedCategories.map(s => s.toLowerCase())
+
+      // Проверяем, входит ли выбранная категория в ожидаемые
+      if (expectedSlugs.includes(slugLower)) {
+        return { status: 'valid', suggestedCategories: [] }
+      }
+
+      // Категория НЕ в списке ожидаемых — warning (жёлтый)
+      // Возвращаем рекомендуемые категории, которые есть в базе
+      const availableSuggestions = rule.expectedCategories.filter(s =>
+        validSlugs.has(s.toLowerCase())
+      )
+      return { status: 'warning', suggestedCategories: availableSuggestions }
+    }
+  }
+
+  // Не нашли правило для этого товара — считаем что всё ОК
+  return { status: 'valid', suggestedCategories: [] }
+}
+
 // Компонент выбора категории с dropdown и рекомендациями
 function CategorySelector({
   value,
@@ -185,8 +296,18 @@ function CategorySelector({
   const [search, setSearch] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const isValid = value ? validSlugs.has(value.toLowerCase()) : true
-  const similarCategories = value && !isValid ? findSimilarCategories(value, categories) : []
+  // Семантическая проверка: valid (зелёный), warning (жёлтый), invalid (красный)
+  const { status, suggestedCategories } = checkCategoryMatch(productName, value, validSlugs)
+
+  // Для invalid — ищем похожие категории по fuzzy matching
+  const similarCategories = status === 'invalid' && value
+    ? findSimilarCategories(value, categories)
+    : []
+
+  // Рекомендации для отображения (объединяем семантические + fuzzy)
+  const recommendations = status === 'warning'
+    ? suggestedCategories
+    : similarCategories.map(c => c.slug)
 
   // Фильтрация категорий по поиску
   const filteredCategories = categories.filter(cat =>
@@ -205,6 +326,19 @@ function CategorySelector({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Стили и иконки в зависимости от статуса
+  const statusStyles = {
+    valid: "bg-green-100 text-green-700 hover:bg-green-200",
+    warning: "bg-amber-100 text-amber-700 hover:bg-amber-200",
+    invalid: "bg-red-100 text-red-700 hover:bg-red-200"
+  }
+
+  const statusIcons = {
+    valid: null,
+    warning: <span title="Категория может не соответствовать товару">⚠️</span>,
+    invalid: <span>❌</span>
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Основная кнопка */}
@@ -213,33 +347,36 @@ function CategorySelector({
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "flex items-center gap-1 px-2 py-1 rounded text-sm transition-colors",
-          isValid
-            ? "bg-green-100 text-green-700 hover:bg-green-200"
-            : "bg-red-100 text-red-700 hover:bg-red-200"
+          statusStyles[status]
         )}
       >
         {value || '—'}
-        {!isValid && <span>❌</span>}
+        {statusIcons[status]}
         <ChevronDown className="w-3 h-3 ml-1" />
       </button>
 
-      {/* Рекомендации (показываем под кнопкой если есть похожие и dropdown закрыт) */}
-      {!isOpen && !isValid && similarCategories.length > 0 && (
+      {/* Рекомендации (показываем под кнопкой если есть и dropdown закрыт) */}
+      {!isOpen && (status === 'invalid' || status === 'warning') && recommendations.length > 0 && (
         <div className="absolute top-full left-0 mt-1 z-10">
-          <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-lg shadow-sm border border-amber-200">
+          <div className={cn(
+            "flex items-center gap-1 text-xs px-2 py-1 rounded-lg shadow-sm border",
+            status === 'warning'
+              ? "text-amber-600 bg-amber-50 border-amber-200"
+              : "text-red-600 bg-red-50 border-red-200"
+          )}>
             <Lightbulb className="w-3 h-3" />
-            <span>Может:</span>
-            {similarCategories.slice(0, 2).map((cat, i) => (
+            <span>{status === 'warning' ? 'Лучше:' : 'Может:'}</span>
+            {recommendations.slice(0, 2).map((slug, i) => (
               <button
-                key={cat.id}
+                key={slug}
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
-                  onChange(cat.slug)
+                  onChange(slug)
                 }}
                 className="font-medium hover:underline"
               >
-                {cat.slug}{i < Math.min(similarCategories.length, 2) - 1 ? ',' : ''}
+                {slug}{i < Math.min(recommendations.length, 2) - 1 ? ',' : ''}
               </button>
             ))}
           </div>
@@ -265,26 +402,42 @@ function CategorySelector({
           </div>
 
           {/* Рекомендации в dropdown */}
-          {!isValid && similarCategories.length > 0 && (
-            <div className="p-2 bg-amber-50 border-b">
-              <div className="flex items-center gap-1 text-xs text-amber-700 mb-1">
+          {status !== 'valid' && recommendations.length > 0 && (
+            <div className={cn(
+              "p-2 border-b",
+              status === 'warning' ? "bg-amber-50" : "bg-red-50"
+            )}>
+              <div className={cn(
+                "flex items-center gap-1 text-xs mb-1",
+                status === 'warning' ? "text-amber-700" : "text-red-700"
+              )}>
                 <Lightbulb className="w-3 h-3" />
-                <span className="font-medium">Рекомендации:</span>
+                <span className="font-medium">
+                  {status === 'warning' ? '⚠️ Рекомендуем другую категорию:' : 'Похожие категории:'}
+                </span>
               </div>
               <div className="flex flex-wrap gap-1">
-                {similarCategories.map(cat => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => {
-                      onChange(cat.slug)
-                      setIsOpen(false)
-                    }}
-                    className="px-2 py-0.5 bg-amber-200 text-amber-800 rounded text-xs hover:bg-amber-300 transition-colors"
-                  >
-                    {cat.name}
-                  </button>
-                ))}
+                {recommendations.map(slug => {
+                  const cat = categories.find(c => c.slug.toLowerCase() === slug.toLowerCase())
+                  return (
+                    <button
+                      key={slug}
+                      type="button"
+                      onClick={() => {
+                        onChange(slug)
+                        setIsOpen(false)
+                      }}
+                      className={cn(
+                        "px-2 py-0.5 rounded text-xs transition-colors",
+                        status === 'warning'
+                          ? "bg-amber-200 text-amber-800 hover:bg-amber-300"
+                          : "bg-red-200 text-red-800 hover:bg-red-300"
+                      )}
+                    >
+                      {cat?.name || slug}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
