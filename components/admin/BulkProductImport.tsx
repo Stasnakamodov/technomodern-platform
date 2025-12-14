@@ -104,7 +104,108 @@ function levenshteinDistance(a: string, b: string): number {
   return matrix[b.length][a.length]
 }
 
-// Поиск похожих категорий
+// Словарь английских ключевых слов → подходящие категории (для поиска по slug)
+const SLUG_TO_CATEGORIES: Record<string, string[]> = {
+  // Электроника и периферия
+  headphone: ['peripherals', 'electronics', 'computer-accessories'],
+  earphone: ['peripherals', 'electronics', 'computer-accessories'],
+  earbuds: ['peripherals', 'electronics', 'computer-accessories'],
+  airpods: ['peripherals', 'electronics', 'computer-accessories'],
+  speaker: ['peripherals', 'electronics', 'smart-home'],
+  audio: ['peripherals', 'electronics'],
+  mouse: ['peripherals', 'computer-accessories'],
+  keyboard: ['peripherals', 'computer-accessories'],
+  monitor: ['peripherals', 'electronics', 'computer-accessories'],
+  webcam: ['peripherals', 'computer-accessories'],
+  usb: ['computer-accessories', 'peripherals', 'electrical-components'],
+  cable: ['computer-accessories', 'electrical-components', 'peripherals'],
+  charger: ['computer-accessories', 'electronics', 'electrical'],
+  adapter: ['computer-accessories', 'electrical-components'],
+
+  // Смартфоны и планшеты
+  phone: ['smartphones-tablets', 'electronics'],
+  smartphone: ['smartphones-tablets', 'electronics'],
+  mobile: ['smartphones-tablets', 'electronics'],
+  tablet: ['smartphones-tablets', 'electronics'],
+  iphone: ['smartphones-tablets', 'electronics'],
+  ipad: ['smartphones-tablets', 'electronics'],
+  samsung: ['smartphones-tablets', 'electronics'],
+  xiaomi: ['smartphones-tablets', 'electronics', 'smart-home'],
+
+  // Умные устройства
+  smart: ['smart-home', 'electronics', 'smartwatches'],
+  watch: ['smartwatches', 'electronics'],
+  bracelet: ['smartwatches', 'electronics'],
+  fitness: ['smartwatches', 'electronics'],
+
+  // Компьютеры
+  laptop: ['electronics', 'computer-accessories'],
+  computer: ['electronics', 'computer-accessories'],
+  pc: ['electronics', 'computer-accessories'],
+
+  // Авто
+  car: ['automotive', 'auto-parts', 'auto-chemicals'],
+  auto: ['automotive', 'auto-parts', 'auto-chemicals'],
+  tire: ['tires-wheels', 'automotive'],
+  wheel: ['tires-wheels', 'automotive'],
+  oil: ['auto-chemicals', 'automotive'],
+
+  // Дом
+  furniture: ['furniture', 'home'],
+  sofa: ['furniture', 'home'],
+  chair: ['furniture', 'home'],
+  table: ['furniture', 'home'],
+  bed: ['bedroom', 'furniture'],
+  mattress: ['bedroom', 'furniture'],
+  lamp: ['lighting', 'home', 'decor'],
+  light: ['lighting', 'electrical', 'smart-home'],
+
+  // Кухня
+  kitchen: ['kitchen', 'tableware', 'home'],
+  cookware: ['tableware', 'kitchen'],
+  pot: ['tableware', 'kitchen'],
+  pan: ['tableware', 'kitchen'],
+  kettle: ['kitchen', 'tableware'],
+  coffee: ['kitchen', 'tableware'],
+
+  // Инструменты
+  tool: ['tools', 'industrial'],
+  drill: ['tools', 'industrial'],
+  saw: ['tools', 'industrial', 'machinery'],
+  hammer: ['tools'],
+  wrench: ['tools'],
+
+  // Красота и здоровье
+  cosmetic: ['cosmetics', 'health-beauty'],
+  makeup: ['cosmetics', 'health-beauty'],
+  skincare: ['skincare', 'health-beauty', 'cosmetics'],
+  cream: ['skincare', 'cosmetics', 'health-beauty'],
+  vitamin: ['vitamins', 'health-beauty'],
+  supplement: ['vitamins', 'health-beauty'],
+
+  // Текстиль
+  textile: ['textiles', 'home'],
+  towel: ['textiles', 'home', 'household-goods'],
+  curtain: ['textiles', 'home', 'decor'],
+  bedding: ['textiles', 'bedroom'],
+
+  // Строительство
+  building: ['building-materials', 'construction'],
+  paint: ['paints', 'construction'],
+  cement: ['building-materials', 'construction'],
+  tile: ['finishing-materials', 'construction'],
+  plumbing: ['plumbing', 'construction'],
+  pipe: ['plumbing', 'construction'],
+  faucet: ['plumbing'],
+
+  // Электрика
+  electric: ['electrical', 'electrical-components'],
+  wire: ['electrical', 'electrical-components'],
+  socket: ['electrical', 'electrical-components'],
+  switch: ['electrical', 'electrical-components', 'smart-home'],
+}
+
+// Поиск похожих категорий с семантическим анализом
 function findSimilarCategories(
   inputSlug: string,
   categories: Category[],
@@ -112,21 +213,42 @@ function findSimilarCategories(
 ): Category[] {
   if (!inputSlug || categories.length === 0) return []
 
-  const input = inputSlug.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const input = inputSlug.toLowerCase().replace(/[^a-z0-9-]/g, '')
+  const availableSlugs = new Set(categories.map(c => c.slug.toLowerCase()))
 
-  // Собираем результаты с оценкой похожести
+  // 1. СЕМАНТИЧЕСКИЙ ПОИСК: проверяем ключевые слова в введённом slug
+  const semanticMatches: string[] = []
+  for (const [keyword, targetCategories] of Object.entries(SLUG_TO_CATEGORIES)) {
+    if (input.includes(keyword) || keyword.includes(input)) {
+      for (const target of targetCategories) {
+        if (availableSlugs.has(target) && !semanticMatches.includes(target)) {
+          semanticMatches.push(target)
+        }
+      }
+    }
+  }
+
+  // Если нашли семантические совпадения — возвращаем их
+  if (semanticMatches.length > 0) {
+    return semanticMatches
+      .slice(0, maxResults)
+      .map(slug => categories.find(c => c.slug.toLowerCase() === slug)!)
+      .filter(Boolean)
+  }
+
+  // 2. FUZZY ПОИСК: если семантика не помогла, ищем по похожести slug
   const scored = categories.map(cat => {
     const slug = cat.slug.toLowerCase()
     const name = cat.name.toLowerCase()
 
     let score = 0
 
-    // 1. Точное совпадение подстроки в slug - высокий приоритет
+    // Точное совпадение подстроки в slug
     if (slug.includes(input) || input.includes(slug)) {
       score += 100
     }
 
-    // 2. Общие части слов (разбиваем по дефису)
+    // Общие части слов (разбиваем по дефису)
     const inputParts = input.split('-').filter(Boolean)
     const slugParts = slug.split('-').filter(Boolean)
 
@@ -135,31 +257,23 @@ function findSimilarCategories(
         if (sp.includes(ip) || ip.includes(sp)) {
           score += 50
         }
-        // Общее начало
-        if (sp.startsWith(ip.slice(0, 3)) || ip.startsWith(sp.slice(0, 3))) {
-          score += 30
-        }
       }
     }
 
-    // 3. Расстояние Левенштейна (чем меньше, тем лучше)
-    const distance = levenshteinDistance(input, slug.replace(/-/g, ''))
-    if (distance <= 3) {
-      score += (4 - distance) * 20
-    }
-
-    // 4. Название категории содержит ключевые слова из input
-    const nameWords = name.split(' ').map(w => w.toLowerCase())
+    // Название категории содержит ключевые слова из input
+    const nameWords = name.split(/\s+/)
     for (const ip of inputParts) {
-      if (nameWords.some(w => w.includes(ip) || ip.includes(w))) {
+      if (ip.length >= 3 && nameWords.some(w => w.toLowerCase().includes(ip))) {
         score += 40
       }
     }
 
+    // НЕ используем Левенштейна для коротких строк - это давало ложные срабатывания
+    // типа "headphones" → "health-beauty"
+
     return { category: cat, score }
   })
 
-  // Фильтруем и сортируем
   return scored
     .filter(s => s.score > 0)
     .sort((a, b) => b.score - a.score)
