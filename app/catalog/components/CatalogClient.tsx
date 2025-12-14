@@ -425,7 +425,7 @@ export default function CatalogClient({
   const currentSortValue = `${sortBy}-${sortOrder}`
 
   return (
-    <div className="min-h-screen relative overflow-hidden catalog-mesh-bg">
+    <div className="min-h-screen relative catalog-mesh-bg">
 
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
