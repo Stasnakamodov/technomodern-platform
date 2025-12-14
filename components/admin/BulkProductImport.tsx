@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import * as XLSX from 'xlsx'
 import {
@@ -18,7 +18,11 @@ import {
   RefreshCw,
   ImageIcon,
   ImageOff,
-  HelpCircle
+  HelpCircle,
+  Copy,
+  Search,
+  ChevronRight,
+  FileDown
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,6 +63,14 @@ interface BulkProductImportProps {
   onClose?: () => void
 }
 
+interface Category {
+  id: string
+  name: string
+  slug: string
+  parent_id: string | null
+  level: number
+}
+
 type ImportStep = 'upload' | 'preview' | 'importing' | 'result'
 
 export function BulkProductImport({ onClose }: BulkProductImportProps) {
@@ -69,6 +81,12 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [fileName, setFileName] = useState('')
+
+  // Модалка с инструкцией
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [categorySearch, setCategorySearch] = useState('')
+  const [loadingCategories, setLoadingCategories] = useState(false)
 
   // Данные для предпросмотра
   const [parsedProducts, setParsedProducts] = useState<ParsedProduct[]>([])
@@ -87,6 +105,40 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
 
   // Результат импорта
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
+
+  // Загрузка категорий для модалки
+  useEffect(() => {
+    if (showTemplateModal && categories.length === 0) {
+      loadCategories()
+    }
+  }, [showTemplateModal])
+
+  const loadCategories = async () => {
+    setLoadingCategories(true)
+    try {
+      const res = await fetch('/api/admin/categories')
+      if (res.ok) {
+        const data = await res.json()
+        setCategories(data.categories || [])
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error)
+    } finally {
+      setLoadingCategories(false)
+    }
+  }
+
+  // Фильтрация категорий по поиску
+  const filteredCategories = categories.filter(cat =>
+    cat.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
+    cat.slug.toLowerCase().includes(categorySearch.toLowerCase())
+  )
+
+  // Копировать slug в буфер
+  const copySlug = (slug: string) => {
+    navigator.clipboard.writeText(slug)
+    toast.success(`Скопировано: ${slug}`)
+  }
 
   // Скачать шаблон
   const downloadTemplate = async (format: 'xlsx' | 'csv' = 'xlsx') => {
@@ -417,7 +469,7 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => downloadTemplate('xlsx')}
+            onClick={() => setShowTemplateModal(true)}
             disabled={isLoading}
           >
             <Download className="w-4 h-4 mr-2" />
@@ -425,6 +477,213 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
           </Button>
         </div>
       </div>
+
+      {/* Модалка с инструкцией по шаблону */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl">
+            {/* Header модалки */}
+            <div className="flex items-center justify-between p-6 border-b">
+              <div>
+                <h3 className="text-xl font-semibold">📋 Инструкция по заполнению шаблона</h3>
+                <p className="text-sm text-gray-500 mt-1">Заполните шаблон согласно инструкции для успешного импорта</p>
+              </div>
+              <button
+                onClick={() => setShowTemplateModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Контент модалки */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)] space-y-6">
+              {/* Обязательные поля */}
+              <div>
+                <h4 className="font-semibold text-red-600 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                  Обязательные поля
+                </h4>
+                <div className="bg-red-50 rounded-lg p-4 space-y-2">
+                  <div className="flex items-start gap-3">
+                    <code className="bg-white px-2 py-1 rounded text-sm font-mono text-red-700 shrink-0">name</code>
+                    <span className="text-sm text-gray-700">Название товара. Пример: <span className="text-gray-500">«Смартфон Xiaomi Redmi Note 13 Pro 8/256GB»</span></span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <code className="bg-white px-2 py-1 rounded text-sm font-mono text-red-700 shrink-0">price</code>
+                    <span className="text-sm text-gray-700">Цена в рублях (только число). Пример: <span className="text-gray-500">28990</span></span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Рекомендуемые поля */}
+              <div>
+                <h4 className="font-semibold text-blue-600 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  Рекомендуемые поля
+                </h4>
+                <div className="bg-blue-50 rounded-lg p-4 space-y-2 text-sm">
+                  <div className="grid grid-cols-[120px,1fr] gap-2 items-start">
+                    <code className="bg-white px-2 py-1 rounded font-mono text-blue-700">category_slug</code>
+                    <span className="text-gray-700">Код категории из списка ниже</span>
+                  </div>
+                  <div className="grid grid-cols-[120px,1fr] gap-2 items-start">
+                    <code className="bg-white px-2 py-1 rounded font-mono text-blue-700">description</code>
+                    <span className="text-gray-700">Описание товара (2-4 предложения)</span>
+                  </div>
+                  <div className="grid grid-cols-[120px,1fr] gap-2 items-start">
+                    <code className="bg-white px-2 py-1 rounded font-mono text-blue-700">images</code>
+                    <span className="text-gray-700">Ссылки на картинки через запятую</span>
+                  </div>
+                  <div className="grid grid-cols-[120px,1fr] gap-2 items-start">
+                    <code className="bg-white px-2 py-1 rounded font-mono text-blue-700">sku</code>
+                    <span className="text-gray-700">Уникальный артикул товара</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Дополнительные поля */}
+              <div>
+                <h4 className="font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+                  Дополнительные поля
+                </h4>
+                <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600 space-y-1">
+                  <p><code className="bg-white px-1 rounded font-mono">supplier_name</code> — название поставщика</p>
+                  <p><code className="bg-white px-1 rounded font-mono">in_stock</code> — наличие (true/false)</p>
+                  <p><code className="bg-white px-1 rounded font-mono">min_order</code> — минимальный заказ</p>
+                  <p><code className="bg-white px-1 rounded font-mono">specifications</code> — характеристики в формате <span className="text-gray-500">Цвет:Чёрный|Размер:XL</span></p>
+                  <p><code className="bg-white px-1 rounded font-mono">tags</code> — теги через запятую</p>
+                </div>
+              </div>
+
+              {/* Список категорий */}
+              <div>
+                <h4 className="font-semibold text-green-600 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  Доступные категории
+                  <span className="text-xs font-normal text-gray-500">— используйте значение из колонки «slug»</span>
+                </h4>
+
+                {/* Поиск по категориям */}
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Поиск категории..."
+                    value={categorySearch}
+                    onChange={(e) => setCategorySearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+
+                {/* Таблица категорий */}
+                <div className="border rounded-lg overflow-hidden max-h-[250px] overflow-y-auto">
+                  {loadingCategories ? (
+                    <div className="p-8 text-center">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
+                      <p className="text-sm text-gray-500 mt-2">Загрузка категорий...</p>
+                    </div>
+                  ) : (
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="text-left px-4 py-2 font-medium text-gray-600">Категория</th>
+                          <th className="text-left px-4 py-2 font-medium text-gray-600">slug (используйте это)</th>
+                          <th className="w-10"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {filteredCategories.length === 0 ? (
+                          <tr>
+                            <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
+                              {categorySearch ? 'Категории не найдены' : 'Нет категорий'}
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredCategories.map((cat) => (
+                            <tr key={cat.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-2">
+                                <span style={{ paddingLeft: `${(cat.level - 1) * 16}px` }} className="flex items-center gap-1">
+                                  {cat.level > 1 && <ChevronRight className="w-3 h-3 text-gray-300" />}
+                                  {cat.name}
+                                </span>
+                              </td>
+                              <td className="px-4 py-2">
+                                <code className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-mono">
+                                  {cat.slug}
+                                </code>
+                              </td>
+                              <td className="px-2">
+                                <button
+                                  onClick={() => copySlug(cat.slug)}
+                                  className="p-1.5 hover:bg-gray-200 rounded transition-colors"
+                                  title="Копировать slug"
+                                >
+                                  <Copy className="w-3.5 h-3.5 text-gray-500" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+
+              {/* Пример заполнения */}
+              <div>
+                <h4 className="font-semibold text-purple-600 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                  Пример заполнения строки
+                </h4>
+                <div className="bg-purple-50 rounded-lg p-4 font-mono text-xs overflow-x-auto">
+                  <table className="text-left">
+                    <tbody>
+                      <tr><td className="pr-4 text-purple-600">name:</td><td>Смартфон Xiaomi Redmi Note 13 Pro 8/256GB</td></tr>
+                      <tr><td className="pr-4 text-purple-600">price:</td><td>28990</td></tr>
+                      <tr><td className="pr-4 text-purple-600">sku:</td><td>PHONE-001</td></tr>
+                      <tr><td className="pr-4 text-purple-600">category_slug:</td><td>smartphones</td></tr>
+                      <tr><td className="pr-4 text-purple-600">description:</td><td>Флагманский смартфон с камерой 200 МП...</td></tr>
+                      <tr><td className="pr-4 text-purple-600">images:</td><td>https://example.com/img1.jpg, https://example.com/img2.jpg</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer с кнопками скачивания */}
+            <div className="p-6 border-t bg-gray-50 flex items-center justify-between">
+              <p className="text-sm text-gray-500">
+                Выберите формат для скачивания шаблона
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    downloadTemplate('csv')
+                    setShowTemplateModal(false)
+                  }}
+                >
+                  <FileDown className="w-4 h-4 mr-2" />
+                  Скачать CSV
+                </Button>
+                <Button
+                  onClick={() => {
+                    downloadTemplate('xlsx')
+                    setShowTemplateModal(false)
+                  }}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <FileDown className="w-4 h-4 mr-2" />
+                  Скачать Excel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Step: Upload */}
       {step === 'upload' && (
