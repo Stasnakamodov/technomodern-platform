@@ -11,31 +11,20 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  console.log('Products API called')
-  console.log('Request headers:', Object.fromEntries(request.headers.entries()))
-  console.log('Cookies from request:', request.cookies.getAll())
-
   const isAuthed = await checkAdminAuth()
-  console.log('Auth check result:', isAuthed)
-
   if (!isAuthed) {
-    // Временно пропускаем проверку для отладки
-    console.log('Auth failed, but continuing for debug...')
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
     const { id } = await params
 
-    console.log('Fetching products for supplier_id:', id)
-
     const { data, error, count } = await supabase
       .from('products')
-      .select('id, name, price, image_url, sku, in_stock, created_at', { count: 'exact' })
+      .select('id, name, price, images, sku, in_stock, created_at', { count: 'exact' })
       .eq('supplier_id', id)
       .order('created_at', { ascending: false })
       .limit(100)
-
-    console.log('Query result - count:', count, 'error:', error)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })

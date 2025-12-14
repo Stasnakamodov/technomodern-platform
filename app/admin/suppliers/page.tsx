@@ -48,7 +48,7 @@ interface Product {
   id: string
   name: string
   price: number
-  image_url: string | null
+  images: string[] | null
   sku: string | null
   in_stock: boolean
   created_at: string
@@ -507,9 +507,9 @@ export default function SuppliersPage() {
                       className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="w-16 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0 border">
-                        {product.image_url ? (
+                        {product.images && product.images.length > 0 ? (
                           <Image
-                            src={product.image_url}
+                            src={product.images[0]}
                             alt={product.name}
                             width={64}
                             height={64}
