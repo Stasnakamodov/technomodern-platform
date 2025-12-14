@@ -22,7 +22,9 @@ import {
   Copy,
   Search,
   ChevronRight,
-  FileDown
+  ChevronDown,
+  FileDown,
+  Lightbulb
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -73,6 +75,267 @@ interface Category {
 }
 
 type ImportStep = 'upload' | 'preview' | 'importing' | 'result'
+
+// Функция расчёта расстояния Левенштейна (для fuzzy matching)
+function levenshteinDistance(a: string, b: string): number {
+  const matrix: number[][] = []
+
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i]
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j
+  }
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1]
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        )
+      }
+    }
+  }
+
+  return matrix[b.length][a.length]
+}
+
+// Поиск похожих категорий
+function findSimilarCategories(
+  inputSlug: string,
+  categories: Category[],
+  maxResults: number = 3
+): Category[] {
+  if (!inputSlug || categories.length === 0) return []
+
+  const input = inputSlug.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+  // Собираем результаты с оценкой похожести
+  const scored = categories.map(cat => {
+    const slug = cat.slug.toLowerCase()
+    const name = cat.name.toLowerCase()
+
+    let score = 0
+
+    // 1. Точное совпадение подстроки в slug - высокий приоритет
+    if (slug.includes(input) || input.includes(slug)) {
+      score += 100
+    }
+
+    // 2. Общие части слов (разбиваем по дефису)
+    const inputParts = input.split('-').filter(Boolean)
+    const slugParts = slug.split('-').filter(Boolean)
+
+    for (const ip of inputParts) {
+      for (const sp of slugParts) {
+        if (sp.includes(ip) || ip.includes(sp)) {
+          score += 50
+        }
+        // Общее начало
+        if (sp.startsWith(ip.slice(0, 3)) || ip.startsWith(sp.slice(0, 3))) {
+          score += 30
+        }
+      }
+    }
+
+    // 3. Расстояние Левенштейна (чем меньше, тем лучше)
+    const distance = levenshteinDistance(input, slug.replace(/-/g, ''))
+    if (distance <= 3) {
+      score += (4 - distance) * 20
+    }
+
+    // 4. Название категории содержит ключевые слова из input
+    const nameWords = name.split(' ').map(w => w.toLowerCase())
+    for (const ip of inputParts) {
+      if (nameWords.some(w => w.includes(ip) || ip.includes(w))) {
+        score += 40
+      }
+    }
+
+    return { category: cat, score }
+  })
+
+  // Фильтруем и сортируем
+  return scored
+    .filter(s => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxResults)
+    .map(s => s.category)
+}
+
+// Компонент выбора категории с dropdown и рекомендациями
+function CategorySelector({
+  value,
+  categories,
+  validSlugs,
+  onChange,
+  productName
+}: {
+  value: string | undefined
+  categories: Category[]
+  validSlugs: Set<string>
+  onChange: (slug: string) => void
+  productName: string
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const isValid = value ? validSlugs.has(value.toLowerCase()) : true
+  const similarCategories = value && !isValid ? findSimilarCategories(value, categories) : []
+
+  // Фильтрация категорий по поиску
+  const filteredCategories = categories.filter(cat =>
+    cat.name.toLowerCase().includes(search.toLowerCase()) ||
+    cat.slug.toLowerCase().includes(search.toLowerCase())
+  )
+
+  // Закрытие при клике вне
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      {/* Основная кнопка */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "flex items-center gap-1 px-2 py-1 rounded text-sm transition-colors",
+          isValid
+            ? "bg-green-100 text-green-700 hover:bg-green-200"
+            : "bg-red-100 text-red-700 hover:bg-red-200"
+        )}
+      >
+        {value || '—'}
+        {!isValid && <span>❌</span>}
+        <ChevronDown className="w-3 h-3 ml-1" />
+      </button>
+
+      {/* Рекомендации (показываем под кнопкой если есть похожие и dropdown закрыт) */}
+      {!isOpen && !isValid && similarCategories.length > 0 && (
+        <div className="absolute top-full left-0 mt-1 z-10">
+          <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-lg shadow-sm border border-amber-200">
+            <Lightbulb className="w-3 h-3" />
+            <span>Может:</span>
+            {similarCategories.slice(0, 2).map((cat, i) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onChange(cat.slug)
+                }}
+                className="font-medium hover:underline"
+              >
+                {cat.slug}{i < Math.min(similarCategories.length, 2) - 1 ? ',' : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Dropdown */}
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-xl border z-50 overflow-hidden">
+          {/* Поиск */}
+          <div className="p-2 border-b">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Поиск категории..."
+                className="w-full pl-8 pr-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
+              />
+            </div>
+          </div>
+
+          {/* Рекомендации в dropdown */}
+          {!isValid && similarCategories.length > 0 && (
+            <div className="p-2 bg-amber-50 border-b">
+              <div className="flex items-center gap-1 text-xs text-amber-700 mb-1">
+                <Lightbulb className="w-3 h-3" />
+                <span className="font-medium">Рекомендации:</span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {similarCategories.map(cat => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      onChange(cat.slug)
+                      setIsOpen(false)
+                    }}
+                    className="px-2 py-0.5 bg-amber-200 text-amber-800 rounded text-xs hover:bg-amber-300 transition-colors"
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Список категорий */}
+          <div className="max-h-48 overflow-y-auto">
+            {filteredCategories.length === 0 ? (
+              <div className="p-3 text-center text-gray-500 text-sm">
+                Категории не найдены
+              </div>
+            ) : (
+              filteredCategories.map(cat => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    onChange(cat.slug)
+                    setIsOpen(false)
+                    setSearch('')
+                  }}
+                  className={cn(
+                    "w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center justify-between",
+                    value?.toLowerCase() === cat.slug.toLowerCase() && "bg-blue-50"
+                  )}
+                  style={{ paddingLeft: `${12 + (cat.level - 1) * 16}px` }}
+                >
+                  <span>{cat.name}</span>
+                  <code className="text-xs text-gray-400">{cat.slug}</code>
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* Кнопка очистки */}
+          <div className="p-2 border-t bg-gray-50">
+            <button
+              type="button"
+              onClick={() => {
+                onChange('')
+                setIsOpen(false)
+              }}
+              className="w-full text-center text-xs text-gray-500 hover:text-gray-700"
+            >
+              Очистить категорию
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function BulkProductImport({ onClose }: BulkProductImportProps) {
   const router = useRouter()
@@ -1009,21 +1272,13 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
                         {product.sku || '-'}
                       </td>
                       <td className="px-4 py-3">
-                        {product.category_slug || product.category_name ? (
-                          <span className={cn(
-                            "px-2 py-1 rounded text-sm",
-                            product.category_slug && validCategorySlugs.has(product.category_slug.toLowerCase())
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          )}>
-                            {product.category_slug || product.category_name}
-                            {product.category_slug && !validCategorySlugs.has(product.category_slug.toLowerCase()) && (
-                              <span className="ml-1">❌</span>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
+                        <CategorySelector
+                          value={product.category_slug || product.category_name}
+                          categories={categories}
+                          validSlugs={validCategorySlugs}
+                          onChange={(slug) => updateProduct(product.id, 'category_slug', slug)}
+                          productName={product.name}
+                        />
                       </td>
                       <td className="px-4 py-3 text-gray-600">
                         {product.supplier_name || '-'}
