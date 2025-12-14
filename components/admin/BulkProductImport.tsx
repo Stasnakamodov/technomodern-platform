@@ -17,7 +17,8 @@ import {
   Trash2,
   RefreshCw,
   ImageIcon,
-  ImageOff
+  ImageOff,
+  HelpCircle
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -524,42 +525,78 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
           <Card className="p-4">
             <h3 className="font-medium mb-3">Опции импорта</h3>
             <div className="grid grid-cols-2 gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={options.skipDuplicates}
-                  onChange={(e) => setOptions(prev => ({ ...prev, skipDuplicates: e.target.checked }))}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm">Пропускать дубликаты (по SKU)</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={options.updateExisting}
-                  onChange={(e) => setOptions(prev => ({ ...prev, updateExisting: e.target.checked }))}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm">Обновлять существующие товары</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={options.autoCreateCategories}
-                  onChange={(e) => setOptions(prev => ({ ...prev, autoCreateCategories: e.target.checked }))}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm">Создавать категории автоматически</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={options.autoCreateSuppliers}
-                  onChange={(e) => setOptions(prev => ({ ...prev, autoCreateSuppliers: e.target.checked }))}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm">Создавать поставщиков автоматически</span>
-              </label>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={options.skipDuplicates}
+                    onChange={(e) => setOptions(prev => ({ ...prev, skipDuplicates: e.target.checked }))}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm">Пропускать дубликаты (по SKU)</span>
+                </label>
+                <div className="group relative">
+                  <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg">
+                    Товары с одинаковым артикулом (SKU) будут пропущены
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={options.updateExisting}
+                    onChange={(e) => setOptions(prev => ({ ...prev, updateExisting: e.target.checked }))}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm">Обновлять существующие товары</span>
+                </label>
+                <div className="group relative">
+                  <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg">
+                    Если товар с таким SKU уже есть — обновить его данные
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={options.autoCreateCategories}
+                    onChange={(e) => setOptions(prev => ({ ...prev, autoCreateCategories: e.target.checked }))}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm">Создавать категории автоматически</span>
+                </label>
+                <div className="group relative">
+                  <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg">
+                    Если категория не найдена — создать новую автоматически
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={options.autoCreateSuppliers}
+                    onChange={(e) => setOptions(prev => ({ ...prev, autoCreateSuppliers: e.target.checked }))}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm">Создавать поставщиков автоматически</span>
+                </label>
+                <div className="group relative">
+                  <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 shadow-lg">
+                    Если поставщик не найден — создать нового автоматически
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+                  </div>
+                </div>
+              </div>
             </div>
           </Card>
 
