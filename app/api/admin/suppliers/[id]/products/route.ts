@@ -19,18 +19,22 @@ export async function GET(
   try {
     const { id } = await params
 
-    const { data, error } = await supabase
+    console.log('Fetching products for supplier_id:', id)
+
+    const { data, error, count } = await supabase
       .from('products')
-      .select('id, name, price, image_url, sku, in_stock, created_at')
+      .select('id, name, price, image_url, sku, in_stock, created_at', { count: 'exact' })
       .eq('supplier_id', id)
       .order('created_at', { ascending: false })
       .limit(100)
+
+    console.log('Query result - count:', count, 'error:', error)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ products: data || [] })
+    return NextResponse.json({ products: data || [], supplier_id: id, total: count })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

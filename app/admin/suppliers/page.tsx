@@ -115,13 +115,21 @@ export default function SuppliersPage() {
     setSupplierProducts([])
 
     try {
-      const res = await fetch(`/api/admin/suppliers/${supplier.id}/products`)
+      const res = await fetch(`/api/admin/suppliers/${supplier.id}/products`, {
+        credentials: 'include'
+      })
       if (res.ok) {
         const data = await res.json()
+        console.log('Products response:', data)
         setSupplierProducts(data.products || [])
+      } else {
+        const errorData = await res.json()
+        console.error('API error:', errorData)
+        toast.error('Ошибка загрузки товаров: ' + (errorData.error || res.status))
       }
     } catch (error) {
       console.error('Failed to load products:', error)
+      toast.error('Не удалось загрузить товары')
     } finally {
       setLoadingProducts(false)
     }
