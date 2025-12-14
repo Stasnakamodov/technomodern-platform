@@ -293,15 +293,21 @@ function CategorySelector({
   productName: string
 }) {
   const [isOpen, setIsOpen] = useState(false)
-  const [search, setSearch] = useState('')
+  const [localValue, setLocalValue] = useState(value || '')
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Синхронизация с внешним value
+  useEffect(() => {
+    setLocalValue(value || '')
+  }, [value])
 
   // Семантическая проверка: valid (зелёный), warning (жёлтый), invalid (красный)
-  const { status, suggestedCategories } = checkCategoryMatch(productName, value, validSlugs)
+  const { status, suggestedCategories } = checkCategoryMatch(productName, localValue, validSlugs)
 
   // Для invalid — ищем похожие категории по fuzzy matching
-  const similarCategories = status === 'invalid' && value
-    ? findSimilarCategories(value, categories)
+  const similarCategories = status === 'invalid' && localValue
+    ? findSimilarCategories(localValue, categories)
     : []
 
   // Рекомендации для отображения (объединяем семантические + fuzzy)
@@ -309,10 +315,10 @@ function CategorySelector({
     ? suggestedCategories
     : similarCategories.map(c => c.slug)
 
-  // Фильтрация категорий по поиску
+  // Фильтрация категорий по введённому значению
   const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(search.toLowerCase()) ||
-    cat.slug.toLowerCase().includes(search.toLowerCase())
+    cat.name.toLowerCase().includes(localValue.toLowerCase()) ||
+    cat.slug.toLowerCase().includes(localValue.toLowerCase())
   )
 
   // Закрытие при клике вне
@@ -320,42 +326,69 @@ function CategorySelector({
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false)
+        // При закрытии применяем изменения
+        if (localValue !== value) {
+          onChange(localValue)
+        }
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [localValue, value, onChange])
 
-  // Стили и иконки в зависимости от статуса
-  const statusStyles = {
-    valid: "bg-green-100 text-green-700 hover:bg-green-200",
-    warning: "bg-amber-100 text-amber-700 hover:bg-amber-200",
-    invalid: "bg-red-100 text-red-700 hover:bg-red-200"
+  // Стили в зависимости от статуса
+  const statusBorderStyles = {
+    valid: "border-green-400 focus:ring-green-500 bg-green-50",
+    warning: "border-amber-400 focus:ring-amber-500 bg-amber-50",
+    invalid: "border-red-400 focus:ring-red-500 bg-red-50"
   }
 
   const statusIcons = {
-    valid: null,
+    valid: <span className="text-green-600">✓</span>,
     warning: <span title="Категория может не соответствовать товару">⚠️</span>,
     invalid: <span>❌</span>
   }
 
+  // Обработка ввода
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value
+    setLocalValue(newValue)
+    setIsOpen(true) // Показываем dropdown при вводе
+  }
+
+  // Обработка Enter и Escape
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      onChange(localValue)
+      setIsOpen(false)
+    } else if (e.key === 'Escape') {
+      setLocalValue(value || '')
+      setIsOpen(false)
+    }
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Основная кнопка */}
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          "flex items-center gap-1 px-2 py-1 rounded text-sm transition-colors",
-          statusStyles[status]
-        )}
-      >
-        {value || '—'}
+      {/* Редактируемый input */}
+      <div className="flex items-center gap-1">
+        <input
+          ref={inputRef}
+          type="text"
+          value={localValue}
+          onChange={handleInputChange}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={handleKeyDown}
+          className={cn(
+            "w-32 px-2 py-1 text-sm border rounded transition-colors focus:outline-none focus:ring-2",
+            statusBorderStyles[status]
+          )}
+          placeholder="категория..."
+        />
         {statusIcons[status]}
-        <ChevronDown className="w-3 h-3 ml-1" />
-      </button>
+      </div>
 
-      {/* Рекомендации (показываем под кнопкой если есть и dropdown закрыт) */}
+      {/* Рекомендации (показываем под input если есть и dropdown закрыт) */}
       {!isOpen && (status === 'invalid' || status === 'warning') && recommendations.length > 0 && (
         <div className="absolute top-full left-0 mt-1 z-10">
           <div className={cn(
@@ -373,6 +406,7 @@ function CategorySelector({
                 onClick={(e) => {
                   e.stopPropagation()
                   onChange(slug)
+                  setLocalValue(slug)
                 }}
                 className="font-medium hover:underline"
               >
@@ -383,23 +417,9 @@ function CategorySelector({
         </div>
       )}
 
-      {/* Dropdown */}
+      {/* Dropdown с категориями */}
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-xl border z-50 overflow-hidden">
-          {/* Поиск */}
-          <div className="p-2 border-b">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Поиск категории..."
-                className="w-full pl-8 pr-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                autoFocus
-              />
-            </div>
-          </div>
 
           {/* Рекомендации в dropdown */}
           {status !== 'valid' && recommendations.length > 0 && (
@@ -425,6 +445,7 @@ function CategorySelector({
                       type="button"
                       onClick={() => {
                         onChange(slug)
+                        setLocalValue(slug)
                         setIsOpen(false)
                       }}
                       className={cn(
@@ -455,8 +476,8 @@ function CategorySelector({
                   type="button"
                   onClick={() => {
                     onChange(cat.slug)
+                    setLocalValue(cat.slug)
                     setIsOpen(false)
-                    setSearch('')
                   }}
                   className={cn(
                     "w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center justify-between",
@@ -477,6 +498,7 @@ function CategorySelector({
               type="button"
               onClick={() => {
                 onChange('')
+                setLocalValue('')
                 setIsOpen(false)
               }}
               className="w-full text-center text-xs text-gray-500 hover:text-gray-700"
