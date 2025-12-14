@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
 import { DeviceProvider } from "@/context/DeviceContext"
+import { CartProvider } from "@/components/cart/CartProvider"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -49,9 +50,11 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={`font-sans antialiased`}>
-        <DeviceProvider isMobile={false}>
-          {children}
-        </DeviceProvider>
+        <CartProvider>
+          <DeviceProvider isMobile={false}>
+            {children}
+          </DeviceProvider>
+        </CartProvider>
         <Toaster />
         <SonnerToaster position="bottom-right" richColors />
         <Analytics />

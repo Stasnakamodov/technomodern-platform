@@ -17,6 +17,8 @@ import {
   Star,
   Globe,
   Package,
+  Box,
+  ShoppingCart,
   Loader2,
   AlertTriangle
 } from 'lucide-react'
@@ -32,6 +34,7 @@ interface Supplier {
   verified: boolean
   rating: number | null
   total_orders: number
+  product_count: number
   created_at: string
   updated_at: string
 }
@@ -257,8 +260,12 @@ export default function SuppliersPage() {
                   </div>
                 )}
                 <div className="flex items-center gap-1">
-                  <Package className="w-4 h-4" />
-                  <span>{supplier.total_orders} заказов</span>
+                  <Box className="w-4 h-4 text-blue-500" />
+                  <span className="font-medium text-blue-600">{supplier.product_count || 0} товаров</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>{supplier.total_orders || 0} заказов</span>
                 </div>
               </div>
 

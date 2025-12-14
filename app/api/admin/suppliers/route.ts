@@ -33,7 +33,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ suppliers: data || [] })
+    // Получаем количество товаров для каждого поставщика
+    const suppliersWithProductCount = await Promise.all(
+      (data || []).map(async (supplier) => {
+        const { count } = await supabase
+          .from('products')
+          .select('id', { count: 'exact', head: true })
+          .eq('supplier_id', supplier.id)
+
+        return {
+          ...supplier,
+          product_count: count || 0
+        }
+      })
+    )
+
+    return NextResponse.json({ suppliers: suppliersWithProductCount })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

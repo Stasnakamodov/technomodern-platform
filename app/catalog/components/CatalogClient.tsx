@@ -2,16 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
-import { toast } from 'sonner'
 import {
-  ShoppingCart, X, Plus, Minus, Package, ArrowLeft, Filter, Loader2,
-  ArrowUpDown, ArrowUp, ArrowDown, Check
+  ShoppingCart, X, Package, ArrowLeft, Filter, Loader2,
+  ArrowUpDown, ArrowUp, ArrowDown
 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -24,12 +21,13 @@ import ProductModal from './ProductModal'
 import CategorySidebar from './CategorySidebar'
 import { ProductGridSkeleton } from './ProductSkeleton'
 import CatalogHeader from '@/components/catalog/CatalogHeader'
+import { CartSidebar } from '@/components/cart/CartSidebar'
+import { useCart } from '@/hooks/useCart'
 
 // Импорт типов из единого места
 import type {
   ProductFromAPI,
   CategoryFromAPI,
-  CartItem,
   SortBy,
   SortOrder,
   CatalogClientProps
@@ -78,8 +76,10 @@ export default function CatalogClient({
     (searchParams.get('sortOrder') as SortOrder) || initialSortOrder
   )
 
+  // Cart state from Zustand store
+  const { items: cartItems, totalItems, addToCart } = useCart()
+
   // UI state
-  const [cart, setCart] = useState<CartItem[]>([])
   const [cartOpen, setCartOpen] = useState(false)
   const [showCategorySidebar, setShowCategorySidebar] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<ProductFromAPI | null>(null)
@@ -331,90 +331,17 @@ export default function CatalogClient({
     }
   }, [])
 
-  // Корзина - загрузка из localStorage
-  useEffect(() => {
-    const savedCart = localStorage.getItem('technomodern_cart')
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart))
-      } catch {
-        // Игнорируем невалидный JSON
-      }
-    }
-  }, [])
-
-  // Сохранение корзины
-  useEffect(() => {
-    localStorage.setItem('technomodern_cart', JSON.stringify(cart))
-  }, [cart])
-
-  // Добавление в корзину с toast уведомлением
-  const addToCart = (product: ProductFromAPI) => {
-    const existingItem = cart.find(item => item.id === product.id)
-    const newQuantity = existingItem ? existingItem.quantity + 1 : 1
-
-    if (existingItem) {
-      setCart(cart.map(item =>
-        item.id === product.id
-          ? { ...item, quantity: newQuantity, total_price: newQuantity * item.price }
-          : item
-      ))
-    } else {
-      const cartItem: CartItem = {
-        id: product.id,
-        name: product.name,
-        supplier_name: product.supplier_name || 'Неизвестный поставщик',
-        price: product.price,
-        quantity: 1,
-        total_price: product.price,
-        currency: 'RUB',
-        image_url: product.images[0],
-        sku: product.sku || undefined
-      }
-      setCart([...cart, cartItem])
-    }
-
-    // Toast уведомление вместо открытия сайдбара
-    toast.success(
-      <div className="flex items-center gap-3">
-        <Check className="h-4 w-4 text-green-600" />
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate">{product.name}</p>
-          <p className="text-xs text-gray-500">
-            {existingItem ? `Количество: ${newQuantity}` : 'Добавлено в корзину'}
-          </p>
-        </div>
-      </div>,
-      {
-        duration: 2000,
-        action: {
-          label: 'Корзина',
-          onClick: () => setCartOpen(true)
-        }
-      }
-    )
-  }
-
-  // Изменение количества
-  const updateQuantity = (itemId: string, delta: number) => {
-    setCart(cart.map(item => {
-      if (item.id === itemId) {
-        const newQuantity = Math.max(1, item.quantity + delta)
-        return { ...item, quantity: newQuantity, total_price: newQuantity * item.price }
-      }
-      return item
-    }).filter(item => item.quantity > 0))
-  }
-
-  // Удаление из корзины
-  const removeFromCart = (itemId: string) => {
-    setCart(cart.filter(item => item.id !== itemId))
-  }
-
-  // Общая сумма
-  const getTotalPrice = () => {
-    return cart.reduce((sum, item) => sum + item.total_price, 0)
-  }
+  // Функция добавления товара в корзину (обёртка для useCart)
+  const handleAddToCart = useCallback((product: ProductFromAPI) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image_url: product.images?.[0],
+      supplier_name: product.supplier_name,
+      sku: product.sku,
+    })
+  }, [addToCart])
 
   // Название выбранной категории
   const selectedCategoryName = selectedCategoryId
@@ -472,9 +399,9 @@ export default function CatalogClient({
             >
               <ShoppingCart className="h-5 w-5 mr-2 max-md:h-4 max-md:w-4 max-md:mr-0" />
               <span className="hidden sm:inline max-md:hidden">Корзина</span>
-              {cart.length > 0 && (
+              {totalItems > 0 && (
                 <Badge className="absolute -top-2 -right-2 bg-gray-900 text-white max-md:text-xs max-md:-top-1 max-md:-right-1">
-                  {cart.length}
+                  {totalItems}
                 </Badge>
               )}
             </Button>
@@ -566,7 +493,7 @@ export default function CatalogClient({
                     <ProductCard
                       key={product.id}
                       product={apiProductToUI(product)}
-                      onAddToCart={() => addToCart(product)}
+                      onAddToCart={() => handleAddToCart(product)}
                       onViewDetails={() => {
                         setSelectedProduct(product)
                         setIsModalOpen(true)
@@ -605,111 +532,7 @@ export default function CatalogClient({
       </div>
 
       {/* Cart Sidebar */}
-      {cartOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setCartOpen(false)}
-          />
-          <div className="fixed right-0 top-0 h-full w-full max-w-md max-md:max-w-full bg-white shadow-2xl z-50 flex flex-col">
-            <div className="p-6 max-md:p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl max-md:text-xl font-bold text-gray-900">Корзина</h2>
-                <Button variant="ghost" size="sm" onClick={() => setCartOpen(false)}>
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-              <p className="text-sm text-gray-600 mt-1">{cart.length} товаров</p>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 max-md:p-4 space-y-4 max-md:space-y-3">
-              {cart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                  <ShoppingCart className="h-16 w-16 mb-4" />
-                  <p>Корзина пуста</p>
-                </div>
-              ) : (
-                cart.map(item => (
-                  <Card key={item.id} className="p-4">
-                    <div className="flex gap-3">
-                      {item.image_url && (
-                        <div className="relative w-20 h-20 flex-shrink-0">
-                          <Image
-                            src={item.image_url}
-                            alt={item.name}
-                            fill
-                            className="object-cover rounded"
-                            sizes="80px"
-                            unoptimized
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-sm text-gray-900 mb-1">
-                          {item.name}
-                        </h3>
-                        <p className="text-xs text-gray-600 mb-2">
-                          {item.supplier_name}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateQuantity(item.id, -1)}
-                              className="h-7 w-7 p-0"
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="text-sm font-medium">{item.quantity}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateQuantity(item.id, 1)}
-                              className="h-7 w-7 p-0"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFromCart(item.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="mt-2 text-sm font-bold text-gray-900">
-                          {item.total_price.toLocaleString('ru-RU')} ₽
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))
-              )}
-            </div>
-
-            {cart.length > 0 && (
-              <div className="p-6 max-md:p-4 border-t border-gray-200 space-y-4 max-md:space-y-3">
-                <div className="flex items-center justify-between text-lg max-md:text-base font-bold">
-                  <span>Итого:</span>
-                  <span className="text-2xl max-md:text-xl text-gray-900">
-                    {getTotalPrice().toLocaleString('ru-RU')} ₽
-                  </span>
-                </div>
-                <Button
-                  className="w-full h-12 max-md:h-10 text-base max-md:text-sm bg-gray-900 hover:bg-gray-800 text-white"
-                  onClick={() => alert('Функция создания заказа будет доступна скоро!')}
-                >
-                  <Package className="h-5 w-5 max-md:h-4 max-md:w-4 mr-2" />
-                  Оформить заказ
-                </Button>
-              </div>
-            )}
-          </div>
-        </>
-      )}
+      <CartSidebar isOpen={cartOpen} onClose={() => setCartOpen(false)} />
 
       {/* Product Modal */}
       <ProductModal
@@ -720,7 +543,7 @@ export default function CatalogClient({
           setSelectedProduct(null)
         }}
         onAddToCart={() => {
-          if (selectedProduct) addToCart(selectedProduct)
+          if (selectedProduct) handleAddToCart(selectedProduct)
         }}
       />
     </div>
