@@ -11,7 +11,8 @@ import {
   LogOut,
   Store,
   Menu,
-  X
+  X,
+  Truck
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -22,6 +23,7 @@ const menuItems = [
   { href: '/admin/orders', icon: ShoppingCart, label: 'Заказы' },
   { href: '/admin/products', icon: Package, label: 'Товары' },
   { href: '/admin/categories', icon: FolderTree, label: 'Категории' },
+  { href: '/admin/suppliers', icon: Truck, label: 'Поставщики' },
   { href: '/admin/settings', icon: Settings, label: 'Настройки' },
 ]
 
