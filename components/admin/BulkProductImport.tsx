@@ -108,12 +108,13 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
   // Результат импорта
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
 
-  // Загрузка категорий для модалки
+  // Множество допустимых slug категорий для быстрой проверки
+  const validCategorySlugs = new Set(categories.map(c => c.slug.toLowerCase()))
+
+  // Загрузка категорий при монтировании (для валидации) и для модалки
   useEffect(() => {
-    if (showTemplateModal && categories.length === 0) {
-      loadCategories()
-    }
-  }, [showTemplateModal])
+    loadCategories()
+  }, [])
 
   const loadCategories = async () => {
     setLoadingCategories(true)
@@ -191,6 +192,9 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
       const headers = jsonData[0].map((h: any) =>
         String(h || '').toLowerCase().replace(/\s*\*\s*/g, '').trim()
       )
+
+      // Создаём актуальный Set для валидации (используем текущий categories)
+      const currentValidSlugs = new Set(categories.map(c => c.slug.toLowerCase()))
 
       // Парсим данные
       const products: ParsedProduct[] = []
@@ -280,6 +284,15 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
           product.errors.push('Некорректная цена')
         }
 
+        // Проверка категории (только если не включено автосоздание)
+        if (product.category_slug && currentValidSlugs.size > 0) {
+          const slug = product.category_slug.toLowerCase()
+          if (!currentValidSlugs.has(slug)) {
+            product.isValid = false
+            product.errors.push(`Категория "${product.category_slug}" не найдена`)
+          }
+        }
+
         products.push(product)
       }
 
@@ -300,7 +313,7 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [categories])
 
   // Drag & Drop handlers
   const handleDragOver = (e: React.DragEvent) => {
@@ -350,6 +363,15 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
       if (isNaN(price) || price < 0) {
         updated.isValid = false
         updated.errors.push('Некорректная цена')
+      }
+
+      // Проверка категории
+      if (updated.category_slug) {
+        const slug = updated.category_slug.toLowerCase()
+        if (!validCategorySlugs.has(slug)) {
+          updated.isValid = false
+          updated.errors.push(`Категория "${updated.category_slug}" не найдена`)
+        }
       }
 
       return updated
@@ -986,8 +1008,22 @@ export function BulkProductImport({ onClose }: BulkProductImportProps) {
                       <td className="px-4 py-3 text-gray-600">
                         {product.sku || '-'}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {product.category_slug || product.category_name || '-'}
+                      <td className="px-4 py-3">
+                        {product.category_slug || product.category_name ? (
+                          <span className={cn(
+                            "px-2 py-1 rounded text-sm",
+                            product.category_slug && validCategorySlugs.has(product.category_slug.toLowerCase())
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          )}>
+                            {product.category_slug || product.category_name}
+                            {product.category_slug && !validCategorySlugs.has(product.category_slug.toLowerCase()) && (
+                              <span className="ml-1">❌</span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-gray-600">
                         {product.supplier_name || '-'}
