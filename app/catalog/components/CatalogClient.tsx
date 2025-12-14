@@ -425,9 +425,10 @@ export default function CatalogClient({
   const currentSortValue = `${sortBy}-${sortOrder}`
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen relative overflow-hidden catalog-mesh-bg">
+
       {/* Header */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
         <div className="px-6 py-4 max-md:px-3 max-md:py-2">
           <div className="flex items-center gap-4 max-md:gap-2">
             <Link href="/" className="inline-flex items-center gap-2 max-md:gap-1 px-3 py-2 max-md:px-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors">
@@ -486,8 +487,9 @@ export default function CatalogClient({
         <div className="flex gap-8 max-md:gap-0">
           {/* Sidebar - sticky на desktop */}
           <div className={`
-            ${showCategorySidebar ? 'fixed inset-0 z-50 bg-white p-6 overflow-y-auto max-md:p-4' : 'hidden lg:block'}
+            ${showCategorySidebar ? 'fixed inset-0 z-50 bg-white/95 backdrop-blur-md p-6 overflow-y-auto max-md:p-4' : 'hidden lg:block'}
             lg:sticky lg:top-16 lg:self-start lg:w-[260px] lg:flex-shrink-0 lg:max-h-[calc(100vh-80px)] lg:overflow-y-auto
+            lg:bg-white/70 lg:backdrop-blur-sm lg:rounded-xl lg:border lg:border-white/50 lg:shadow-lg lg:shadow-primary/5 lg:p-4
           `}>
             {showCategorySidebar && (
               <div className="flex items-center justify-between mb-4 lg:hidden max-md:mb-3">

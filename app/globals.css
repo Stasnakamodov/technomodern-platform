@@ -279,3 +279,102 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Catalog Mesh Gradient Background */
+.catalog-mesh-bg {
+  background-color: #f9fafb;
+  background-image:
+    /* Основной фиолетовый градиент сверху-слева */
+    radial-gradient(ellipse 90% 70% at 0% 0%, rgba(147, 51, 234, 0.18) 0%, transparent 55%),
+    /* Синий градиент справа */
+    radial-gradient(ellipse 70% 90% at 100% 15%, rgba(37, 99, 235, 0.14) 0%, transparent 55%),
+    /* Розовый градиент по центру-слева */
+    radial-gradient(ellipse 60% 60% at 5% 55%, rgba(219, 39, 119, 0.12) 0%, transparent 50%),
+    /* Индиго градиент снизу-справа */
+    radial-gradient(ellipse 80% 60% at 85% 100%, rgba(79, 70, 229, 0.14) 0%, transparent 55%),
+    /* Фиолетовый акцент по центру */
+    radial-gradient(ellipse 50% 50% at 50% 40%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+    /* Мягкий градиент снизу */
+    linear-gradient(180deg, transparent 0%, rgba(249, 250, 251, 0.9) 100%);
+  background-attachment: fixed;
+}
+
+/* Вариант с анимацией (опционально) */
+@keyframes meshShift {
+  0%, 100% {
+    background-position: 0% 0%, 100% 20%, 10% 60%, 80% 100%, 50% 50%, 0% 0%;
+  }
+  50% {
+    background-position: 5% 5%, 95% 25%, 15% 55%, 75% 95%, 55% 45%, 0% 0%;
+  }
+}
+
+.catalog-mesh-bg-animated {
+  animation: meshShift 20s ease-in-out infinite;
+}
+
+/* Dark Glassmorphism Button with Purple Glow */
+.btn-glass-dark {
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.25s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-glass-dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
+
+.btn-glass-dark:hover {
+  background: rgba(17, 24, 39, 0.95);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow:
+    0 0 20px rgba(139, 92, 246, 0.25),
+    0 0 40px rgba(139, 92, 246, 0.1),
+    0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-glass-dark:hover::before {
+  opacity: 1;
+}
+
+.btn-glass-dark:active {
+  transform: scale(0.98) translateY(0);
+  box-shadow:
+    0 0 10px rgba(139, 92, 246, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Subtle pulse animation for extra attention (optional) */
+@keyframes subtleGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(139, 92, 246, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+  }
+}
+
+.btn-glass-dark-pulse {
+  animation: subtleGlow 3s ease-in-out infinite;
+}
+
+/* Icon inside button - subtle animation */
+.btn-glass-dark:hover svg {
+  transform: scale(1.1);
+  transition: transform 0.2s ease-out;
+}
+
+.btn-glass-dark svg {
+  transition: transform 0.2s ease-out;
+}

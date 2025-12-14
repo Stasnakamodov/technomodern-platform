@@ -217,7 +217,7 @@ export default function ProductCard({
                 e.stopPropagation()
                 onAddToCart?.(product)
               }}
-              className="w-full h-10 sm:h-11 md:h-12 text-xs sm:text-sm font-semibold bg-gray-900 hover:bg-gray-800 text-white shadow-sm hover:shadow-md transition-all"
+              className="w-full h-10 sm:h-11 md:h-12 text-xs sm:text-sm font-semibold btn-glass-dark"
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
               В корзину
