@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -33,6 +33,13 @@ export default function ProductCard({
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set())
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  // Сбрасываем состояние картинок при смене товара
+  useEffect(() => {
+    setImageErrors(new Set())
+    setLoadedImages(new Set())
+    setCurrentImageIndex(0)
+  }, [product.id])
 
   // Безопасность: проверка данных товара
   if (!product || !product.id || !product.name) {

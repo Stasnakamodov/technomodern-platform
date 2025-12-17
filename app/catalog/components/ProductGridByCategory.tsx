@@ -125,7 +125,10 @@ export default function ProductGridByCategory({
 
   const loadProducts = async () => {
     if (!selectedCategory) return
-    
+
+    // Сбрасываем данные СРАЗУ чтобы не показывать старые товары
+    setProducts([])
+    setFilteredProducts([])
     setIsLoading(true)
     setError(null)
     

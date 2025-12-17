@@ -91,6 +91,7 @@ export default function CatalogClient({
   const prefetchedPages = useRef<Set<number>>(new Set())
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null)
   const isLoadingMoreRef = useRef(false) // Защита от race condition
+  const isProgrammaticNavigation = useRef(false) // Флаг программной навигации
 
   // Загрузка товаров с API (с AbortController)
   const fetchProducts = useCallback(async (
@@ -191,11 +192,16 @@ export default function CatalogClient({
     }
 
     const newURL = params.toString() ? `/catalog?${params}` : '/catalog'
+    // Устанавливаем флаг что это программная навигация (не браузерная кнопка назад/вперёд)
+    isProgrammaticNavigation.current = true
     router.push(newURL, { scroll: false })
   }, [router])
 
   // Выбор категории
   const handleCategorySelect = useCallback((categoryId: string, closeSidebar: boolean = true) => {
+    // Сбрасываем данные СРАЗУ чтобы не показывать старые товары
+    setProducts([])
+    setTotal(0)
     setSelectedCategoryId(categoryId)
     setPage(1)
     updateURL(categoryId, searchQuery, sortBy, sortOrder)
@@ -297,8 +303,14 @@ export default function CatalogClient({
     return () => observer.disconnect()
   }, [prefetchNextPage])
 
-  // Синхронизация с URL при изменении
+  // Синхронизация с URL при изменении (только для навигации браузера назад/вперёд)
   useEffect(() => {
+    // Если это программная навигация (из нашего кода) - пропускаем, запрос уже сделан
+    if (isProgrammaticNavigation.current) {
+      isProgrammaticNavigation.current = false
+      return
+    }
+
     const urlCategory = searchParams.get('category') || ''
     const urlSearch = searchParams.get('search') || ''
     const urlSortBy = (searchParams.get('sortBy') as SortBy) || 'created_at'
@@ -311,6 +323,9 @@ export default function CatalogClient({
       urlSortOrder !== sortOrder
 
     if (needsUpdate) {
+      // Очищаем данные при смене через URL (кнопки браузера назад/вперёд)
+      setProducts([])
+      setTotal(0)
       setSelectedCategoryId(urlCategory)
       setSearchQuery(urlSearch)
       setSortBy(urlSortBy)
@@ -488,7 +503,10 @@ export default function CatalogClient({
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8 auto-rows-fr">
+                <div
+                  key={`grid-${selectedCategoryId || 'all'}`}
+                  className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8 auto-rows-fr"
+                >
                   {products.map((product) => (
                     <ProductCard
                       key={product.id}
