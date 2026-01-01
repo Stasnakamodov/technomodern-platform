@@ -1,4 +1,15 @@
 import { supabaseServer } from './supabase-server'
+import {
+  getLocalCategories,
+  getLocalProducts,
+  getLocalProductsByCategoryTree,
+  getLocalProduct as getLocalProductById
+} from './catalog-fallback'
+
+// Флаг для использования локальных данных
+const USE_LOCAL_DATA = process.env.USE_LOCAL_CATALOG === 'true' ||
+  !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL === ''
 
 // ============================================
 // ТИПЫ (экспортируются для использования везде)
@@ -291,51 +302,89 @@ async function fetchCategoriesFromDB(): Promise<Category[]> {
 
 // Получение товаров с серверной фильтрацией и пагинацией
 export async function getProducts(filters: ProductFilters): Promise<ProductsResponse> {
-  return fetchProductsRPC(filters)
+  // Используем локальные данные если Supabase недоступен
+  if (USE_LOCAL_DATA) {
+    console.log('[Catalog] Using local data (Supabase unavailable)')
+    return getLocalProducts(filters)
+  }
+
+  try {
+    return await fetchProductsRPC(filters)
+  } catch (error) {
+    console.warn('[Catalog] Supabase error, falling back to local data:', error)
+    return getLocalProducts(filters)
+  }
 }
 
 // Fallback функция для прямых запросов
 export async function getProductsDirect(filters: ProductFilters): Promise<ProductsResponse> {
-  return fetchProductsDirect(filters)
+  if (USE_LOCAL_DATA) {
+    return getLocalProducts(filters)
+  }
+
+  try {
+    return await fetchProductsDirect(filters)
+  } catch (error) {
+    console.warn('[Catalog] Supabase direct error, falling back to local data:', error)
+    return getLocalProducts(filters)
+  }
 }
 
 // Получение категорий (свежие данные из БД)
 export async function getCategories(): Promise<Category[]> {
-  return fetchCategoriesFromDB()
+  if (USE_LOCAL_DATA) {
+    console.log('[Catalog] Using local categories (Supabase unavailable)')
+    return getLocalCategories()
+  }
+
+  try {
+    return await fetchCategoriesFromDB()
+  } catch (error) {
+    console.warn('[Catalog] Supabase error getting categories, falling back to local data:', error)
+    return getLocalCategories()
+  }
 }
 
 // Получение одного товара
 export async function getProduct(id: string): Promise<ProductResult | null> {
+  if (USE_LOCAL_DATA) {
+    return getLocalProductById(id)
+  }
+
   if (!isValidUUID(id)) {
     return null
   }
 
-  const { data, error } = await supabaseServer
-    .from('products')
-    .select(`
-      id,
-      name,
-      description,
-      price,
-      images,
-      sku,
-      category_id,
-      supplier_id,
-      in_stock,
-      min_order,
-      created_at,
-      categories(name),
-      suppliers(name)
-    `)
-    .eq('id', id)
-    .is('deleted_at', null)
-    .single()
+  try {
+    const { data, error } = await supabaseServer
+      .from('products')
+      .select(`
+        id,
+        name,
+        description,
+        price,
+        images,
+        sku,
+        category_id,
+        supplier_id,
+        in_stock,
+        min_order,
+        created_at,
+        categories(name),
+        suppliers(name)
+      `)
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single()
 
-  if (error || !data) {
-    return null
+    if (error || !data) {
+      return getLocalProductById(id)
+    }
+
+    return mapProductResult(data)
+  } catch {
+    return getLocalProductById(id)
   }
-
-  return mapProductResult(data)
 }
 
 // Soft delete товара
@@ -392,8 +441,15 @@ export async function getProductsByCategoryTree(
   categoryId: string,
   filters: Omit<ProductFilters, 'categoryId'>
 ): Promise<ProductsResponse> {
+  // Используем локальные данные если Supabase недоступен
+  if (USE_LOCAL_DATA) {
+    console.log('[Catalog] Using local data for category tree (Supabase unavailable)')
+    return getLocalProductsByCategoryTree(categoryId, filters)
+  }
+
   if (!isValidUUID(categoryId)) {
-    throw new Error('Invalid category ID format')
+    // Попробуем локальные данные если ID невалидный для Supabase
+    return getLocalProductsByCategoryTree(categoryId, filters)
   }
 
   const {
@@ -404,6 +460,7 @@ export async function getProductsByCategoryTree(
     sortOrder = 'desc'
   } = filters
 
+  try {
   // Пробуем RPC (один запрос)
   const { data: rpcData, error: rpcError } = await supabaseServer.rpc('get_products_by_category_tree', {
     parent_cat_id: categoryId,
@@ -474,7 +531,8 @@ export async function getProductsByCategoryTree(
   const { data, error, count } = await query
 
   if (error) {
-    throw new Error(`Failed to fetch products: ${error.message}`)
+    console.warn('[Catalog] Supabase error in category tree, falling back to local data:', error)
+    return getLocalProductsByCategoryTree(categoryId, filters)
   }
 
   const total = count || 0
@@ -485,5 +543,9 @@ export async function getProductsByCategoryTree(
     page,
     limit,
     hasMore: page * limit < total
+  }
+  } catch (error) {
+    console.warn('[Catalog] Supabase error in category tree, falling back to local data:', error)
+    return getLocalProductsByCategoryTree(categoryId, filters)
   }
 }
